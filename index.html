@@ -60,123 +60,290 @@
       </div>
 
       <div class="hero-visual">
-        <div class="phone" aria-label="Simulasi interaktif layar Detail Celengan Sisihin">
-          <div class="phone-notch" aria-hidden="true"></div>
-          <div class="phone-screen">
-            <div class="phone-tabs" role="tablist" aria-label="Coba tampilan aplikasi">
-              <button type="button" class="phone-tab is-active" role="tab" aria-selected="true" aria-controls="panel-detail" data-phone-tab="detail">Detail Celengan</button>
-              <button type="button" class="phone-tab" role="tab" aria-selected="false" aria-controls="panel-calc" data-phone-tab="calc">Kalkulator Target</button>
+        <div class="phone" aria-label="Simulasi interaktif aplikasi Sisihin">
+          <div class="phone-screen" id="phone-screen" data-phone-theme="dark">
+            <div class="app-statusbar" aria-hidden="true">
+              <span>9.35</span>
+              <span class="status-icons">
+                <svg viewBox="0 0 24 24"><path d="M2 17h3v4H2v-4zm5-3h3v7H7v-7zm5-3h3v10h-3V11zm5-4h3v14h-3V7z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M12 20.5 1.5 9.2A15.6 15.6 0 0 1 12 5c4 0 7.7 1.5 10.5 4.2L12 20.5zm0-4.1 4.6-5A9.7 9.7 0 0 0 12 9.4c-1.7 0-3.3.4-4.6 1l4.6 5z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M4 7h15v10H4V7zm16 3h2v4h-2v-4z"/></svg>
+              </span>
             </div>
 
-            <div class="phone-panel is-active" id="panel-detail" role="tabpanel">
-              <div class="mini-topbar">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.67 3.87 9.9 5.64l6.56 6.56H2v2.4h14.46l-6.56 6.56 1.77 1.77 9.41-9.41z"/></svg>
-                <strong>Keyboard</strong>
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-              </div>
-
-              <div class="phone-body">
-                <div class="goal-photo">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM7 8h2v2H7V8zm0 3h2v2H7v-2zM5 14h14v4H5v-4zm9-3h2v2h-2v-2zm3 0h2v2h-2v-2zm3 0h2v2h-2v-2zM7 16h2v1H7v-1zm4 0h6v1h-6v-1z"/></svg>
-                  <span>Foto barang incaran</span>
-                </div>
-
-                <div class="mini-block target-block">
-                  <div class="target-row">
-                    <div>
-                      <div class="target-amount">Rp500.000</div>
-                      <div class="target-plan" id="sim-plan">Rp15.000 Perhari</div>
+            <div class="app-content" id="app-content">
+              <!-- Tabungan -->
+              <section class="app-screen is-active" id="screen-tabungan" aria-label="Tabungan">
+                <div class="app-topbar"><h2>Tabungan<span class="brand-dot">.</span></h2></div>
+                <div class="app-scroll">
+                  <div class="app-pad">
+                    <div class="summary-card">
+                      <div><span>TOTAL UANG TERKUMPUL</span><strong id="summary-total">Rp505.000</strong></div>
+                      <div class="v-divider" aria-hidden="true"></div>
+                      <div><span>TARGET BERJALAN</span><strong class="accent" id="summary-count">2</strong></div>
                     </div>
-                    <div class="ring-wrap">
-                      <svg class="ring" viewBox="0 0 64 64" aria-hidden="true">
-                        <circle class="ring-track" cx="32" cy="32" r="26"></circle>
-                        <circle class="ring-value" id="sim-ring-progress" cx="32" cy="32" r="26" stroke-dasharray="163.36" stroke-dashoffset="96.38"></circle>
-                      </svg>
-                      <span class="ring-label" id="sim-percent">41%</span>
+                    <div class="goal-list" id="goal-list"></div>
+                  </div>
+                </div>
+                <button type="button" class="app-fab" id="open-form" aria-label="Tambah Celengan">+</button>
+              </section>
+
+              <!-- Tercapai -->
+              <section class="app-screen" id="screen-tercapai" aria-label="Tercapai" hidden>
+                <div class="app-topbar"><h2>Tercapai</h2></div>
+                <div class="app-scroll"><div class="app-pad"><div class="goal-list" id="achieved-list"></div></div></div>
+              </section>
+
+              <!-- Pengaturan -->
+              <section class="app-screen" id="screen-pengaturan" aria-label="Pengaturan" hidden>
+                <div class="app-topbar"><h2>Pengaturan</h2></div>
+                <div class="app-scroll">
+                  <div class="app-pad settings-pad">
+                    <div class="settings-heading">Tampilan</div>
+                    <div class="settings-card">
+                      <strong>Tema Aplikasi</strong>
+                      <div class="segmented settings-theme" role="group" aria-label="Tema aplikasi">
+                        <button type="button" data-inapp-theme="system" aria-pressed="false">Sistem</button>
+                        <button type="button" data-inapp-theme="dark" aria-pressed="true">Gelap</button>
+                        <button type="button" data-inapp-theme="light" aria-pressed="false">Terang</button>
+                      </div>
+                      <span class="settings-hint">Sistem mengikuti pengaturan tema perangkat.</span>
+                    </div>
+
+                    <div class="settings-heading">Keamanan &amp; Privasi</div>
+                    <div class="settings-card">
+                      <div class="settings-row">
+                        <div class="settings-row-text">
+                          <strong>Kunci Aplikasi (Biometrik)</strong>
+                          <span id="biometric-caption">Nonaktif secara default</span>
+                        </div>
+                        <button type="button" class="app-switch" id="biometric-switch" role="switch" aria-checked="false" aria-label="Kunci aplikasi biometrik"><span></span></button>
+                      </div>
+                    </div>
+
+                    <div class="settings-heading">Data</div>
+                    <div class="settings-card">
+                      <button type="button" class="settings-action" data-demo-snackbar="Fitur backup &amp; restore JSON tersedia di aplikasi Android"><strong>Cadangkan Data</strong><span>Simpan celengan dan riwayat ke file JSON</span></button>
+                      <div class="app-divider"></div>
+                      <button type="button" class="settings-action" data-demo-snackbar="Fitur backup &amp; restore JSON tersedia di aplikasi Android"><strong>Pulihkan Data</strong><span>Pulihkan dari file cadangan JSON</span></button>
+                    </div>
+
+                    <div class="settings-heading">Tentang</div>
+                    <div class="settings-card">
+                      <button type="button" class="settings-action" id="about-row"><strong>Tentang Sisihin</strong><span>Ketuk untuk melihat informasi aplikasi.</span></button>
+                      <div class="app-divider"></div>
+                      <button type="button" class="settings-action" id="check-update"><strong>Cek Pembaruan</strong><span>Periksa versi terbaru Sisihin</span></button>
+                    </div>
+
+                    <div class="settings-foot"><strong>Sisihin</strong><span id="settings-version">Versi 1.1.3</span></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- Detail celengan -->
+              <section class="app-screen" id="screen-detail" aria-label="Detail Celengan" hidden>
+                <div class="app-topbar detail-topbar">
+                  <button type="button" class="icon-btn" id="detail-back" aria-label="Kembali">
+                    <svg viewBox="0 0 24 24"><path d="M11.67 3.87 9.9 5.64l6.56 6.56H2v2.4h14.46l-6.56 6.56 1.77 1.77 9.41-9.41z"/></svg>
+                  </button>
+                  <div class="detail-top-actions">
+                    <button type="button" class="icon-btn" id="detail-edit" aria-label="Edit celengan">
+                      <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                    </button>
+                    <button type="button" class="icon-btn" id="detail-delete" aria-label="Hapus celengan">
+                      <svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <h3 class="detail-title" id="detail-title">Keyboard</h3>
+                <div class="app-divider"></div>
+                <div class="app-scroll">
+                  <div class="app-pad detail-pad">
+                    <div class="detail-photo" id="detail-photo"><strong id="detail-initials">KE</strong><span>Belum ada foto</span></div>
+                    <div class="detail-block">
+                      <div class="target-row">
+                        <div><div class="target-amount" id="detail-target">Rp500.000</div><div class="target-plan" id="detail-plan">Rp15.000 Perhari</div></div>
+                        <div class="ring-wrap">
+                          <svg class="ring" viewBox="0 0 64 64" aria-hidden="true">
+                            <circle class="ring-track" cx="32" cy="32" r="26"></circle>
+                            <circle class="ring-value" id="detail-ring" cx="32" cy="32" r="26" stroke-dasharray="163.36" stroke-dashoffset="96.38"></circle>
+                          </svg>
+                          <span class="ring-label" id="detail-percent">41%</span>
+                        </div>
+                      </div>
+                      <div class="app-divider"></div>
+                      <div class="mini-row"><span>Tanggal Dibuat</span><span>1 Jan 2026</span></div>
+                      <div class="mini-row"><span>Estimasi</span><strong id="detail-estimate">20 Hari Lagi</strong></div>
+                    </div>
+
+                    <div class="detail-block balance-block">
+                      <span class="block-label">SALDO</span>
+                      <div class="balance-cells">
+                        <div><span>Terkumpul</span><strong class="text-green" id="detail-collected">Rp205.000</strong></div>
+                        <div class="v-divider" aria-hidden="true"></div>
+                        <div><span>Kekurangan</span><strong class="text-red" id="detail-remaining">Rp295.000</strong></div>
+                      </div>
+                    </div>
+
+                    <div id="detail-actions">
+                      <div class="detail-block">
+                        <div class="action-row">
+                          <button type="button" class="app-action action-add" id="detail-add">+ Tambah</button>
+                          <button type="button" class="app-action action-withdraw" id="detail-withdraw">- Kurangi</button>
+                        </div>
+                        <div class="chip-row" id="detail-chips"></div>
+                      </div>
+                      <div class="detail-block reminder-block" id="detail-reminder-row">
+                        <span class="reminder-icon">
+                          <svg viewBox="0 0 24 24"><path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6v-5a6 6 0 0 0-5-5.91V4a1 1 0 1 0-2 0v1.09A6 6 0 0 0 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                        </span>
+                        <div class="reminder-text"><strong>12:00</strong><span>Setiap hari</span></div>
+                        <button type="button" class="app-switch" id="detail-reminder" role="switch" aria-checked="true" aria-label="Pengingat harian"><span></span></button>
+                      </div>
+                    </div>
+
+                    <div class="celebration" id="detail-celebration" hidden>
+                      <strong>100% Tercapai</strong>
+                      <span>Target tercapai. Celengan ini sudah diarsipkan dan tidak dapat diubah.</span>
+                    </div>
+
+                    <div class="detail-block history-block">
+                      <span class="block-label" id="history-label">RIWAYAT TABUNGAN</span>
+                      <div class="app-divider"></div>
+                      <div id="detail-history"></div>
                     </div>
                   </div>
-                  <div class="mini-divider"></div>
-                  <div class="mini-row"><span>Tanggal Dibuat</span><span>1 Jan 2026</span></div>
-                  <div class="mini-row"><span>Estimasi</span><strong id="sim-estimate">20 Hari Lagi</strong></div>
                 </div>
+              </section>
 
-                <div class="mini-block balance-block">
-                  <span class="block-label">SALDO</span>
-                  <div class="balance-cells">
-                    <div><span>Terkumpul</span><strong class="text-green" id="sim-collected">Rp205.000</strong></div>
-                    <div class="v-divider" aria-hidden="true"></div>
-                    <div><span>Kekurangan</span><strong class="text-red" id="sim-remaining">Rp295.000</strong></div>
+              <!-- Form tambah/edit -->
+              <section class="app-screen" id="screen-form" aria-label="Tambah Tabungan" hidden>
+                <div class="app-topbar form-topbar">
+                  <button type="button" class="icon-btn" id="form-back" aria-label="Kembali">
+                    <svg viewBox="0 0 24 24"><path d="M11.67 3.87 9.9 5.64l6.56 6.56H2v2.4h14.46l-6.56 6.56 1.77 1.77 9.41-9.41z"/></svg>
+                  </button>
+                  <button type="button" class="save-btn" id="form-save">Simpan</button>
+                </div>
+                <div class="app-scroll">
+                  <div class="app-pad form-pad">
+                    <div class="photo-upload"><span class="photo-upload-icon">+</span><strong>Tambah Foto Barang</strong><span>Opsional • Ketuk untuk memilih dari galeri</span></div>
+                    <label class="field"><span>Nama Tabungan</span><input type="text" id="form-name" placeholder="Mis. Keyboard" autocomplete="off"></label>
+                    <label class="field"><span>Target Tabungan</span><input type="text" id="form-target" inputmode="numeric" placeholder="Rp0" autocomplete="off"></label>
+                    <div class="field" id="form-currency-open" role="button" tabindex="0" aria-label="Pilih mata uang"><span>Mata Uang</span><div class="field-value"><b id="form-currency">Indonesia Rupiah ( Rp )</b><span>▾</span></div></div>
+                    <div class="app-divider"></div>
+                    <strong class="form-section-title">Rencana Pengisian</strong>
+                    <div class="segmented" id="form-freq" role="group" aria-label="Rencana pengisian">
+                      <button type="button" data-form-freq="0" aria-pressed="true">Harian</button>
+                      <button type="button" data-form-freq="1" aria-pressed="false">Mingguan</button>
+                      <button type="button" data-form-freq="2" aria-pressed="false">Bulanan</button>
+                    </div>
+                    <label class="field"><span id="form-plan-label">Nominal Pengisian</span><input type="text" id="form-plan" inputmode="numeric" placeholder="Rp0" autocomplete="off"></label>
+                    <span class="form-hint" id="form-period-hint">Disisihkan setiap hari</span>
+                    <div class="calc-link-wrap">
+                      <span>Masih bingung mengisi rencana pengisian ?</span>
+                      <button type="button" id="form-calc-open">Hitung Dengan Kalkulator Target</button>
+                    </div>
+                    <div class="app-divider"></div>
+                    <strong class="form-section-title">Notifikasi</strong>
+                    <div class="form-reminder-row">
+                      <strong>12:00</strong>
+                      <button type="button" class="app-switch" id="form-reminder" role="switch" aria-checked="true" aria-label="Pengingat tabungan"><span></span></button>
+                    </div>
                   </div>
                 </div>
-
-                <div class="mini-block action-block">
-                  <div class="action-row">
-                    <button type="button" class="sim-action sim-add" id="sim-add">+ Tambah</button>
-                    <button type="button" class="sim-action sim-withdraw" id="sim-withdraw">- Kurangi</button>
-                  </div>
-                  <div class="chip-row" id="sim-chips" aria-label="Nominal setoran cepat">
-                    <button type="button" class="sim-chip is-selected" data-sim-amount="15000" aria-pressed="true">15.000</button>
-                    <button type="button" class="sim-chip" data-sim-amount="30000" aria-pressed="false">30.000</button>
-                    <button type="button" class="sim-chip" data-sim-amount="45000" aria-pressed="false">45.000</button>
-                  </div>
-                  <div class="sim-tools">
-                    <button type="button" class="text-action" id="sim-reset">Reset simulasi</button>
-                    <span class="sim-hint">Ketuk chip untuk setoran cepat</span>
-                  </div>
-                </div>
-
-                <div class="sim-feedback" id="sim-feedback" role="status" aria-live="polite" hidden>
-                  <span id="sim-feedback-text"></span>
-                  <button type="button" id="sim-undo">Urungkan</button>
-                </div>
-                <div class="sim-status" id="sim-status" role="status" hidden>
-                  <strong>100% Tercapai</strong>
-                  <span>Target tercapai. Celengan ini sudah diarsipkan dan tidak dapat diubah.</span>
-                </div>
-              </div>
+              </section>
             </div>
 
-            <div class="phone-panel" id="panel-calc" role="tabpanel" hidden>
-              <div class="calc-head">
-                <strong>Kalkulator Target</strong>
-                <span>Hitung otomatis nominal atau lama menabung</span>
+            <nav class="app-bottomnav" id="app-bottomnav" aria-label="Navigasi aplikasi">
+              <button type="button" data-nav-tab="0" aria-pressed="true">
+                <span class="nav-pill"><svg viewBox="0 0 24 24"><path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg></span>
+                <span>Tabungan</span>
+              </button>
+              <button type="button" data-nav-tab="1" aria-pressed="false">
+                <span class="nav-pill"><svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5a2 2 0 0 0-2 2v2a4 4 0 0 0 4 4h.35A6 6 0 0 0 11 15.92V19H7v2h10v-2h-4v-3.08A6 6 0 0 0 16.65 13H17a4 4 0 0 0 4-4V7a2 2 0 0 0-2-2zm0 4a2 2 0 0 1-2 2h-1a5 5 0 0 1-1.9-3.76A2 2 0 0 1 19 9z"/></svg></span>
+                <span>Tercapai</span>
+              </button>
+              <button type="button" data-nav-tab="2" aria-pressed="false">
+                <span class="nav-pill"><svg viewBox="0 0 24 24"><path d="M19.14 12.94a7.07 7.07 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7.3 7.3 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.63.94l-2.39-.96a.5.5 0 0 0-.61.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.42.34.68.22l2.39-.96c.5.38 1.04.7 1.63.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.63-.94l2.39.96c.26.12.54.02.68-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg></span>
+                <span>Pengaturan</span>
+              </button>
+            </nav>
+
+            <div class="app-overlays" id="app-overlays">
+              <div class="app-overlay" id="overlay-record" role="dialog" aria-modal="true" aria-label="Catat Tabungan">
+                <div class="app-backdrop" data-close-overlay></div>
+                <div class="app-dialog">
+                  <strong class="dialog-title">Catat Tabungan</strong>
+                  <div class="segmented record-tabs" id="record-tabs" role="group" aria-label="Jenis transaksi">
+                    <button type="button" data-record-type="deposit" aria-pressed="true">+ Tambah</button>
+                    <button type="button" data-record-type="withdraw" aria-pressed="false">- Kurangi</button>
+                  </div>
+                  <label class="field"><span>Nominal</span><input type="text" id="record-amount" inputmode="numeric" placeholder="0" autocomplete="off"></label>
+                  <span class="record-preview" id="record-preview">Saldo setelahnya: Rp205.000 (41%)</span>
+                  <div class="quick-grid" id="record-quick"></div>
+                  <label class="field"><span>Keterangan</span><input type="text" id="record-note" placeholder="Opsional, mis. Gaji, Bonus" autocomplete="off"></label>
+                  <div class="dialog-actions"><button type="button" class="text-btn" id="record-cancel">Batal</button><button type="button" class="save-btn" id="record-save">Simpan</button></div>
+                </div>
               </div>
-              <div class="phone-body calc-body">
-                <div class="calc-target-card">
-                  <span>Target Tabungan</span>
-                  <strong>Rp500.000</strong>
+
+              <div class="app-overlay sheet-overlay" id="overlay-calc" role="dialog" aria-modal="true" aria-label="Kalkulator Target">
+                <div class="app-backdrop" data-close-overlay></div>
+                <div class="app-sheet">
+                  <div class="sheet-head"><strong>Kalkulator Target</strong><span>Hitung otomatis nominal atau lama menabung</span></div>
+                  <div class="sheet-body">
+                    <div class="calc-target-card"><span>Target Tabungan</span><strong id="calc2-target">Rp0</strong></div>
+                    <div class="segmented" id="calc2-mode" role="group" aria-label="Mode kalkulator">
+                      <button type="button" data-calc2-mode="0" aria-pressed="true">Cari Nominal</button>
+                      <button type="button" data-calc2-mode="1" aria-pressed="false">Cari Waktu</button>
+                    </div>
+                    <div class="segmented" id="calc2-freq" role="group" aria-label="Frekuensi kalkulator">
+                      <button type="button" data-calc2-freq="0" aria-pressed="true">Harian</button>
+                      <button type="button" data-calc2-freq="1" aria-pressed="false">Mingguan</button>
+                      <button type="button" data-calc2-freq="2" aria-pressed="false">Bulanan</button>
+                    </div>
+                    <div class="field"><span id="calc2-amount-label">Jumlah Hari</span><div class="calc-input"><input type="text" id="calc2-amount" inputmode="numeric" autocomplete="off" value="20"><span id="calc2-unit">Hari</span></div></div>
+                    <div class="quick-grid" id="calc2-quick"></div>
+                    <div class="calc-result"><strong id="calc2-result">Rp0 / hari</strong><span id="calc2-date">Estimasi tercapai: —</span></div>
+                    <button type="button" class="wide-primary" id="calc2-apply">Terapkan ke Rencana</button>
+                  </div>
                 </div>
+              </div>
 
-                <div class="pill-track" role="group" aria-label="Mode kalkulator" id="calc-mode">
-                  <button type="button" class="pill-option is-active" data-calc-mode="0" aria-pressed="true">Cari Nominal</button>
-                  <button type="button" class="pill-option" data-calc-mode="1" aria-pressed="false">Cari Waktu</button>
+              <div class="app-overlay sheet-overlay" id="overlay-currency" role="dialog" aria-modal="true" aria-label="Pilih Mata Uang">
+                <div class="app-backdrop" data-close-overlay></div>
+                <div class="app-sheet"><div class="sheet-head"><strong>Pilih Mata Uang</strong></div><div class="sheet-body currency-sheet" id="currency-list"></div></div>
+              </div>
+
+              <div class="app-overlay" id="overlay-confirm" role="dialog" aria-modal="true" aria-label="Hapus celengan">
+                <div class="app-backdrop" data-close-overlay></div>
+                <div class="app-dialog confirm-dialog">
+                  <strong class="dialog-title">Hapus celengan ini?</strong>
+                  <p>Riwayat transaksi dan foto celengan juga akan dihapus. Tindakan ini tidak dapat dibatalkan.</p>
+                  <div class="dialog-actions"><button type="button" class="text-btn" id="confirm-cancel">Batal</button><button type="button" class="text-btn danger" id="confirm-delete">Hapus</button></div>
                 </div>
+              </div>
 
-                <div class="pill-track" role="group" aria-label="Frekuensi menabung" id="calc-freq">
-                  <button type="button" class="pill-option is-active" data-calc-freq="0" aria-pressed="true">Harian</button>
-                  <button type="button" class="pill-option" data-calc-freq="1" aria-pressed="false">Mingguan</button>
-                  <button type="button" class="pill-option" data-calc-freq="2" aria-pressed="false">Bulanan</button>
+              <div class="app-overlay" id="overlay-about" role="dialog" aria-modal="true" aria-label="Tentang Sisihin">
+                <div class="app-backdrop" data-close-overlay></div>
+                <div class="app-dialog">
+                  <strong class="dialog-title">Tentang Sisihin</strong>
+                  <p>Aplikasi Android untuk mencatat celengan dan target tabungan dengan cara sederhana. Semua data disimpan di perangkat dan bisa dibackup/restore ke file JSON.</p>
+                  <p>Sumber &amp; rilis: github.com/mhafizhibrahim/sisihin</p>
+                  <p class="about-version" id="about-version">Versi terpasang: 1.1.3</p>
+                  <div class="dialog-actions"><button type="button" class="text-btn" id="about-close">Tutup</button></div>
                 </div>
+              </div>
 
-                <label class="calc-input-label" for="calc-amount" id="calc-amount-label">Jumlah Hari</label>
-                <div class="calc-input-wrap">
-                  <input type="text" id="calc-amount" inputmode="numeric" autocomplete="off" value="20" aria-describedby="calc-amount-label">
-                  <span id="calc-amount-unit">Hari</span>
-                </div>
-
-                <div class="chip-row calc-quick" id="calc-quick" aria-label="Pilihan cepat"></div>
-
-                <div class="calc-result" id="calc-result">
-                  <strong id="calc-result-value">Rp25.000 / hari</strong>
-                  <span id="calc-result-date">Estimasi tercapai: 20 Jan 2026</span>
-                </div>
-
-                <button type="button" class="calc-apply" id="calc-apply">Terapkan ke Rencana</button>
+              <div class="app-overlay snack-overlay" id="overlay-snack" role="status" aria-live="polite">
+                <div class="app-snackbar"><span id="snack-text"></span><button type="button" id="snack-action" hidden>Urungkan</button></div>
               </div>
             </div>
           </div>
         </div>
-        <p class="mockup-caption">Ini simulasi. Semua angka di atas bisa kamu ubah langsung tanpa daftar akun.</p>
+        <div class="mockup-controls">
+          <span>Coba klik + Tambah, bikin celengan, atau ganti tema di Pengaturan</span>
+          <button type="button" id="reset-sim">Reset Simulasi</button>
+        </div>
       </div>
     </section>
 

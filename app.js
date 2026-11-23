@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Sisihin — interaksi website (vanilla JavaScript, tanpa dependency)
+   Sisihin — website + replika interaktif aplikasi (vanilla JavaScript)
    ========================================================================== */
 
 (function () {
@@ -7,22 +7,28 @@
 
   var RELEASE_API = 'https://api.github.com/repos/mhafizhibrahim/sisihin/releases/latest';
   var RELEASE_PAGE = 'https://github.com/mhafizhibrahim/sisihin/releases/latest';
-  // Sumber: app/build.gradle.kts -> versionName = "1.1.3"
-  var FALLBACK_VERSION = '1.1.3';
-  // Sumber: UpdateChecker.kt -> FALLBACK_CHANGELOG
-  var FALLBACK_CHANGELOG = 'Perbaikan bug dan peningkatan performa.';
+  var FALLBACK_VERSION = '1.1.3'; // app/build.gradle.kts -> versionName
+  var FALLBACK_CHANGELOG = 'Perbaikan bug dan peningkatan performa.'; // UpdateChecker.kt
 
   var $ = function (id) { return document.getElementById(id); };
   var all = function (selector) { return Array.prototype.slice.call(document.querySelectorAll(selector)); };
   var number = function (value) { return Math.round(value).toLocaleString('id-ID'); };
-  var rupiah = function (value) { return 'Rp' + number(value); };
+  var digitsOf = function (text) { return parseInt(String(text).replace(/\D/g, ''), 10) || 0; };
   var clamp = function (value, min, max) { return Math.max(min, Math.min(max, value)); };
+  var make = function (tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+  };
 
-  /* ---------- Tema instan ---------- */
+  /* ---------- Tema website (instan) ---------- */
 
   function currentTheme() {
     return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
   }
+
+  var inAppThemeMode = 'dark';
 
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
@@ -31,7 +37,8 @@
       button.setAttribute('aria-pressed', String(button.getAttribute('data-theme-choice') === theme));
     });
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', theme === 'dark' ? '#000000' : '#FFFFFF');
+    if (meta) meta.setAttribute('content', theme === 'dark' ? '#000000' : '#ffffff');
+    if (inAppThemeMode === 'system') applyAppTheme('system');
   }
 
   all('[data-theme-choice]').forEach(function (button) {
@@ -39,142 +46,559 @@
       applyTheme(button.getAttribute('data-theme-choice'));
     });
   });
-  applyTheme(currentTheme());
 
-  /* ---------- Tab mini di phone mockup ---------- */
-
-  all('[data-phone-tab]').forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      var name = tab.getAttribute('data-phone-tab');
-      all('[data-phone-tab]').forEach(function (item) {
-        var active = item === tab;
-        item.classList.toggle('is-active', active);
-        item.setAttribute('aria-selected', String(active));
-      });
-      all('.phone-panel').forEach(function (panel) {
-        var active = panel.id === 'panel-' + name;
-        panel.classList.toggle('is-active', active);
-        panel.hidden = !active;
-      });
-    });
-  });
-
-  /* ---------- Simulasi Detail Celengan ---------- */
-
-  var TARGET = 500000;
-  var INITIAL_COLLECTED = 205000;
-
-  var sim = {
-    collected: INITIAL_COLLECTED,
-    plan: 15000,
-    selected: 15000,
-    previous: null
-  };
-
-  var RING_CIRCUMFERENCE = 2 * Math.PI * 26;
-
-  function formatDaysText(days) {
-    return days === 1 ? '1 Hari Lagi' : number(days) + ' Hari Lagi';
-  }
-
-  function renderSim() {
-    var remaining = Math.max(0, TARGET - sim.collected);
-    var percent = clamp(Math.round((sim.collected / TARGET) * 100), 0, 100);
-    var days = sim.plan > 0 ? Math.ceil(remaining / sim.plan) : 0;
-
-    $('sim-percent').textContent = percent + '%';
-    $('sim-ring-progress').setAttribute('stroke-dasharray', RING_CIRCUMFERENCE.toFixed(2));
-    $('sim-ring-progress').setAttribute('stroke-dashoffset', (RING_CIRCUMFERENCE * (1 - percent / 100)).toFixed(2));
-    $('sim-collected').textContent = rupiah(sim.collected);
-    $('sim-remaining').textContent = rupiah(remaining);
-    $('sim-plan').textContent = rupiah(sim.plan) + ' Perhari';
-    $('sim-estimate').textContent = remaining === 0 ? 'Target Tercapai' : formatDaysText(days);
-
-    var achieved = remaining === 0;
-    $('sim-status').hidden = !achieved;
-    $('sim-add').disabled = achieved;
-    $('sim-withdraw').disabled = achieved || sim.collected === 0;
-    all('#sim-chips .sim-chip').forEach(function (chip) { chip.disabled = achieved; });
-    if (achieved) $('sim-feedback').hidden = true;
-  }
-
-  var undoAction = null;
-
-  function showFeedback(text, undo) {
-    var bar = $('sim-feedback');
-    $('sim-feedback-text').textContent = text;
-    undoAction = typeof undo === 'function' ? undo : null;
-    $('sim-undo').hidden = !undoAction;
-    bar.hidden = false;
-  }
-
-  function changeCollected(delta, verb) {
-    var next = clamp(sim.collected + delta, 0, TARGET);
-    if (next === sim.collected) return;
-    sim.previous = sim.collected;
-    sim.collected = next;
-    renderSim();
-    showFeedback((delta > 0 ? '+' : '-') + rupiah(Math.abs(delta)) + ' ' + verb, function () {
-      sim.collected = sim.previous;
-      sim.previous = null;
-      renderSim();
-      showFeedback('Perubahan diurungkan.');
-    });
-  }
-
-  all('#sim-chips .sim-chip').forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      sim.selected = parseInt(chip.getAttribute('data-sim-amount'), 10);
-      all('#sim-chips .sim-chip').forEach(function (item) {
-        var active = item === chip;
-        item.classList.toggle('is-selected', active);
-        item.setAttribute('aria-pressed', String(active));
-      });
-      // Di aplikasi asli, mengetuk chip langsung mencatat setoran.
-      changeCollected(sim.selected, 'ditambahkan');
-    });
-  });
-
-  $('sim-add').addEventListener('click', function () {
-    changeCollected(sim.selected, 'ditambahkan');
-  });
-
-  $('sim-withdraw').addEventListener('click', function () {
-    changeCollected(-sim.selected, 'dikurangi');
-  });
-
-  $('sim-reset').addEventListener('click', function () {
-    sim.collected = INITIAL_COLLECTED;
-    sim.plan = 15000;
-    sim.selected = 15000;
-    sim.previous = null;
-    all('#sim-chips .sim-chip').forEach(function (item) {
-      var active = item.getAttribute('data-sim-amount') === '15000';
-      item.classList.toggle('is-selected', active);
-      item.setAttribute('aria-pressed', String(active));
-    });
-    $('sim-feedback').hidden = true;
-    $('sim-status').hidden = true;
-    renderSim();
-  });
-
-  $('sim-undo').addEventListener('click', function () {
-    if (undoAction) undoAction();
-  });
-
-  renderSim();
-
-  /* ---------- Kalkulator Target di dalam mockup ---------- */
+  /* ---------- Model data simulasi ---------- */
 
   var FREQUENCIES = [
     { label: 'Harian', unit: 'Hari', lower: 'hari', days: 1, quick: [7, 14, 30, 90] },
     { label: 'Mingguan', unit: 'Minggu', lower: 'minggu', days: 7, quick: [4, 8, 12, 24] },
     { label: 'Bulanan', unit: 'Bulan', lower: 'bulan', days: 30, quick: [3, 6, 12, 24] }
   ];
-  var QUICK_AMOUNTS = [10000, 20000, 50000, 100000];
 
-  var calc = { mode: 0, frequency: 0, input: 20 };
-  var calcPlanAmount = 0;
+  var CURRENCIES = [
+    { code: 'IDR', symbol: 'Rp', label: 'Indonesia Rupiah (Rp)' },
+    { code: 'USD', symbol: '$', label: 'US Dollar ($)' },
+    { code: 'JPY', symbol: '¥', label: 'Japanese Yen (¥)' },
+    { code: 'EUR', symbol: '€', label: 'Euro (€)' },
+    { code: 'SGD', symbol: 'S$', label: 'Singapore Dollar (S$)' },
+    { code: 'MYR', symbol: 'RM', label: 'Malaysian Ringgit (RM)' },
+    { code: 'KRW', symbol: '₩', label: 'South Korean Won (₩)' },
+    { code: 'GBP', symbol: '£', label: 'British Pound (£)' },
+    { code: 'AUD', symbol: 'A$', label: 'Australian Dollar (A$)' },
+    { code: 'SAR', symbol: '﷼', label: 'Saudi Riyal (﷼)' }
+  ];
+
+  var MAX_GOALS = 5;
+  var goals = [];
+  var currentGoalId = null;
+  var currentTab = 0;
+  var formMode = 'create';
+  var formEditingId = null;
+  var formCurrency = 'IDR';
+  var formFreq = 0;
+  var recordMode = 'deposit';
+  var snackUndo = null;
+  var snackTimer = null;
+  var latestVersion = FALLBACK_VERSION;
+  var RING_CIRCUMFERENCE = 2 * Math.PI * 26;
+
+  function money(value, symbol) {
+    return (symbol || 'Rp') + number(value);
+  }
+
+  function goalMoney(goal, value) {
+    var currency = CURRENCIES.filter(function (item) { return item.code === goal.currency; })[0] || CURRENCIES[0];
+    return money(value, currency.symbol);
+  }
+
+  function initialsOf(name) {
+    var words = String(name).trim().split(/\s+/);
+    return (words[0] && words.length > 1 ? words[0][0] + words[1][0] : String(name).slice(0, 2)).toUpperCase();
+  }
+
+  function makeHistory(type, amount, note) {
+    return {
+      type: type,
+      amount: amount,
+      note: note || (type === 'deposit' ? 'Setoran' : 'Penarikan'),
+      date: new Date()
+    };
+  }
+
+  function seedGoals() {
+    goals = [
+      {
+        id: 'keyboard', title: 'Keyboard', target: 500000, collected: 205000,
+        plan: 15000, freq: 0, currency: 'IDR', created: '1 Jan 2026', reminder: true, achieved: false,
+        history: [
+          makeHistory('deposit', 100000, 'Setoran'),
+          makeHistory('deposit', 55000, 'Uang sisa'),
+          makeHistory('deposit', 50000, 'Setoran')
+        ]
+      },
+      {
+        id: 'sepatu', title: 'Sepatu Lari', target: 750000, collected: 300000,
+        plan: 25000, freq: 0, currency: 'IDR', created: '12 Jan 2026', reminder: true, achieved: false,
+        history: [makeHistory('deposit', 200000, 'Setoran'), makeHistory('deposit', 100000, 'Bonus')]
+      },
+      {
+        id: 'headset', title: 'Headset TWS', target: 350000, collected: 350000,
+        plan: 0, freq: 0, currency: 'IDR', created: '3 Nov 2025', reminder: false, achieved: true,
+        history: [makeHistory('deposit', 350000, 'Target tercapai')]
+      }
+    ];
+  }
+
+  function getGoal(id) {
+    return goals.filter(function (goal) { return goal.id === id; })[0] || null;
+  }
+
+  function percentOf(goal) {
+    return goal.target > 0 ? clamp(Math.round((goal.collected / goal.target) * 100), 0, 100) : 0;
+  }
+
+  function planText(goal) {
+    var suffix = ['Perhari', 'Perminggu', 'Perbulan'][goal.freq];
+    return goal.plan > 0 ? goalMoney(goal, goal.plan) + ' ' + suffix : 'Belum ada rencana';
+  }
+
+  function daysText(goal) {
+    var remaining = Math.max(0, goal.target - goal.collected);
+    if (remaining === 0) return 'Target Tercapai';
+    var perPeriod = goal.plan > 0 ? goal.plan : 1;
+    var periods = Math.ceil(remaining / perPeriod);
+    var days = periods * FREQUENCIES[goal.freq].days;
+    if (days <= 1) return '1 Hari Lagi';
+    return number(days) + ' Hari Lagi';
+  }
+
+  /* ---------- Navigasi layar di dalam HP ---------- */
+
+  var SCREENS = ['screen-tabungan', 'screen-tercapai', 'screen-pengaturan'];
+
+  function showOnly(screenId) {
+    all('.app-screen').forEach(function (screen) {
+      screen.hidden = screen.id !== screenId;
+    });
+  }
+
+  function showTab(index) {
+    currentTab = index;
+    currentGoalId = null;
+    showOnly(SCREENS[index]);
+    $('app-bottomnav').hidden = false;
+    all('[data-nav-tab]').forEach(function (button) {
+      button.setAttribute('aria-pressed', String(parseInt(button.getAttribute('data-nav-tab'), 10) === index));
+    });
+    renderHome();
+  }
+
+  function showDetail(id) {
+    currentGoalId = id;
+    showOnly('screen-detail');
+    $('app-bottomnav').hidden = true;
+    renderDetail();
+  }
+
+  function showForm(mode, id) {
+    formMode = mode;
+    formEditingId = id || null;
+    showOnly('screen-form');
+    $('app-bottomnav').hidden = true;
+    renderForm();
+  }
+
+  all('[data-nav-tab]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      showTab(parseInt(button.getAttribute('data-nav-tab'), 10));
+    });
+  });
+
+  /* ---------- Tema di dalam HP ---------- */
+
+  function applyAppTheme(mode) {
+    inAppThemeMode = mode;
+    var resolved = mode === 'system' ? currentTheme() : mode;
+    $('phone-screen').setAttribute('data-phone-theme', resolved);
+    all('[data-inapp-theme]').forEach(function (button) {
+      button.setAttribute('aria-pressed', String(button.getAttribute('data-inapp-theme') === mode));
+    });
+  }
+
+  all('[data-inapp-theme]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      applyAppTheme(button.getAttribute('data-inapp-theme'));
+    });
+  });
+
+  /* ---------- Overlay (dialog, sheet, snackbar) ---------- */
+
+  function openOverlay(id) {
+    var overlay = $(id);
+    if (overlay) overlay.hidden = false;
+  }
+
+  function closeOverlay(id) {
+    var overlay = $(id);
+    if (overlay) overlay.hidden = true;
+  }
+
+  function openSnack(text, undo) {
+    if (snackTimer) clearTimeout(snackTimer);
+    $('snack-text').textContent = text;
+    snackUndo = typeof undo === 'function' ? undo : null;
+    $('snack-action').hidden = !snackUndo;
+    $('overlay-snack').hidden = false;
+    snackTimer = setTimeout(function () { $('overlay-snack').hidden = true; }, 6000);
+  }
+
+  all('[data-close-overlay]').forEach(function (backdrop) {
+    backdrop.addEventListener('click', function () {
+      closeOverlay(backdrop.parentElement.id);
+    });
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key !== 'Escape') return;
+    var open = all('.app-overlay:not(#overlay-snack)').filter(function (overlay) { return !overlay.hidden; });
+    if (open.length) closeOverlay(open[open.length - 1].id);
+  });
+
+  $('snack-action').addEventListener('click', function () {
+    if (snackUndo) snackUndo();
+  });
+
+  /* ---------- Tabungan & Tercapai ---------- */
+
+  function goalCard(goal) {
+    var card = make('button', 'goal-card');
+    card.type = 'button';
+    var thumb = make('span', 'goal-thumb', initialsOf(goal.title));
+    var info = make('span', 'goal-info');
+    var header = make('span', 'goal-info-header');
+    header.appendChild(make('strong', null, goal.title));
+    header.appendChild(make('span', null, percentOf(goal) + '%'));
+    info.appendChild(header);
+    info.appendChild(make('span', 'goal-money', goalMoney(goal, goal.collected) + ' / ' + goalMoney(goal, goal.target)));
+    info.appendChild(make('span', 'goal-plan', daysText(goal)));
+    var bar = make('span', 'progress-line');
+    var fill = make('span');
+    fill.style.width = percentOf(goal) + '%';
+    bar.appendChild(fill);
+    info.appendChild(bar);
+    card.appendChild(thumb);
+    card.appendChild(info);
+    card.addEventListener('click', function () { showDetail(goal.id); });
+    return card;
+  }
+
+  function renderHome() {
+    var ongoing = goals.filter(function (goal) { return !goal.achieved; });
+    var achieved = goals.filter(function (goal) { return goal.achieved; });
+    var total = ongoing.reduce(function (sum, goal) { return sum + goal.collected; }, 0);
+    $('summary-total').textContent = money(total);
+    $('summary-count').textContent = String(ongoing.length);
+
+    var list = $('goal-list');
+    list.textContent = '';
+    if (!ongoing.length) list.appendChild(make('p', 'goal-empty', 'Belum ada tabungan berjalan. Ketuk + untuk membuat celengan.'));
+    else ongoing.forEach(function (goal) { list.appendChild(goalCard(goal)); });
+
+    var done = $('achieved-list');
+    done.textContent = '';
+    if (!achieved.length) done.appendChild(make('p', 'goal-empty', 'Belum ada tabungan yang tercapai.'));
+    else achieved.forEach(function (goal) { done.appendChild(goalCard(goal)); });
+  }
+
+  /* ---------- Detail celengan ---------- */
+
+  function renderDetail() {
+    var goal = getGoal(currentGoalId);
+    if (!goal) { showTab(0); return; }
+    var percent = percentOf(goal);
+    var remaining = Math.max(0, goal.target - goal.collected);
+
+    $('detail-title').textContent = goal.title;
+    $('detail-initials').textContent = initialsOf(goal.title);
+    $('detail-target').textContent = goalMoney(goal, goal.target);
+    $('detail-plan').textContent = planText(goal);
+    $('detail-percent').textContent = percent + '%';
+    $('detail-ring').setAttribute('stroke-dasharray', RING_CIRCUMFERENCE.toFixed(2));
+    $('detail-ring').setAttribute('stroke-dashoffset', (RING_CIRCUMFERENCE * (1 - percent / 100)).toFixed(2));
+    $('detail-estimate').textContent = daysText(goal);
+    $('detail-collected').textContent = goalMoney(goal, goal.collected);
+    $('detail-remaining').textContent = goalMoney(goal, remaining);
+    $('detail-reminder').setAttribute('aria-checked', String(!!goal.reminder));
+    $('detail-withdraw').disabled = goal.collected <= 0;
+
+    var readOnly = !!goal.achieved;
+    $('detail-actions').hidden = readOnly;
+    $('detail-celebration').hidden = !readOnly;
+    $('detail-edit').hidden = readOnly;
+    $('detail-delete').hidden = readOnly;
+    $('history-label').textContent = readOnly ? 'RIWAYAT TABUNGAN (ARSIP)' : 'RIWAYAT TABUNGAN';
+
+    var chips = $('detail-chips');
+    chips.textContent = '';
+    [15000, 30000, 45000].forEach(function (amount) {
+      var chip = make('button', null, number(amount));
+      chip.type = 'button';
+      chip.addEventListener('click', function () {
+        addTransaction('deposit', amount, 'Setoran cepat');
+      });
+      chips.appendChild(chip);
+    });
+
+    var history = $('detail-history');
+    history.textContent = '';
+    if (!goal.history.length) {
+      history.appendChild(make('p', 'history-empty', 'Belum ada transaksi tercatat.'));
+    } else {
+      goal.history.slice().reverse().forEach(function (item) {
+        var row = make('div', 'history-row');
+        var left = make('span', null, item.note + ' • ' + new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short' }).format(item.date));
+        var value = make('strong', item.type === 'deposit' ? 'text-green' : 'text-red', (item.type === 'deposit' ? '+' : '-') + goalMoney(goal, item.amount));
+        row.appendChild(left);
+        row.appendChild(value);
+        history.appendChild(row);
+      });
+    }
+  }
+
+  function addTransaction(type, amount, note) {
+    var goal = getGoal(currentGoalId);
+    if (!goal || goal.achieved || amount <= 0) return;
+    if (type === 'withdraw' && amount > goal.collected) {
+      openSnack('Nominal melebihi saldo tersedia.');
+      return;
+    }
+    var snapshot = {
+      collected: goal.collected, achieved: goal.achieved, history: goal.history.slice()
+    };
+    goal.collected = type === 'deposit' ? Math.min(goal.target, goal.collected + amount) : goal.collected - amount;
+    goal.history.push(makeHistory(type, amount, note));
+    var reached = goal.collected >= goal.target && !snapshot.achieved;
+    if (reached) goal.achieved = true;
+    renderDetail();
+    renderHome();
+    if (reached) {
+      openSnack('Selamat! ' + goal.title + ' tercapai dan dipindah ke Tercapai.', function () {
+        goal.collected = snapshot.collected;
+        goal.achieved = snapshot.achieved;
+        goal.history = snapshot.history;
+        renderDetail();
+        renderHome();
+      });
+    } else {
+      openSnack((type === 'deposit' ? '+' : '-') + goalMoney(goal, amount) + ' ' + (type === 'deposit' ? 'ditambahkan' : 'dikurangi'), function () {
+        goal.collected = snapshot.collected;
+        goal.achieved = snapshot.achieved;
+        goal.history = snapshot.history;
+        renderDetail();
+        renderHome();
+      });
+    }
+  }
+
+  $('detail-back').addEventListener('click', function () { showTab(currentGoalId && getGoal(currentGoalId) && getGoal(currentGoalId).achieved ? 1 : 0); });
+  $('detail-add').addEventListener('click', function () { openRecord('deposit'); });
+  $('detail-withdraw').addEventListener('click', function () {
+    var goal = getGoal(currentGoalId);
+    if (!goal || goal.collected <= 0) return;
+    openRecord('withdraw');
+  });
+  $('detail-edit').addEventListener('click', function () { showForm('edit', currentGoalId); });
+  $('detail-delete').addEventListener('click', function () { openOverlay('overlay-confirm'); });
+  $('confirm-cancel').addEventListener('click', function () { closeOverlay('overlay-confirm'); });
+  $('confirm-delete').addEventListener('click', function () {
+    var goal = getGoal(currentGoalId);
+    if (!goal) return;
+    goals = goals.filter(function (item) { return item.id !== goal.id; });
+    closeOverlay('overlay-confirm');
+    openSnack(goal.title + ' dihapus.');
+    showTab(goal.achieved ? 1 : 0);
+  });
+  $('detail-reminder').addEventListener('click', function () {
+    var goal = getGoal(currentGoalId);
+    if (!goal || goal.achieved) return;
+    goal.reminder = !goal.reminder;
+    this.setAttribute('aria-checked', String(goal.reminder));
+    openSnack(goal.reminder ? 'Pengingat 12:00 setiap hari aktif.' : 'Pengingat dimatikan.');
+  });
+
+  /* ---------- Modal Catat Tabungan ---------- */
+
+  function openRecord(mode) {
+    setRecordMode(mode);
+    $('record-amount').value = '';
+    $('record-note').value = '';
+    renderRecordPreview();
+    openOverlay('overlay-record');
+  }
+
+  function setRecordMode(mode) {
+    recordMode = mode;
+    all('[data-record-type]').forEach(function (button) {
+      button.setAttribute('aria-pressed', String(button.getAttribute('data-record-type') === mode));
+    });
+    $('record-save').style.background = mode === 'withdraw' ? 'var(--app-red)' : 'var(--app-blue)';
+  }
+
+  function renderRecordPreview() {
+    var goal = getGoal(currentGoalId);
+    if (!goal) return;
+    var amount = digitsOf($('record-amount').value);
+    var preview = $('record-preview');
+    if (recordMode === 'withdraw' && amount > goal.collected) {
+      preview.textContent = 'Nominal melebihi saldo tersedia (' + goalMoney(goal, goal.collected) + ').';
+      preview.classList.add('is-error');
+      return;
+    }
+    preview.classList.remove('is-error');
+    var next = recordMode === 'deposit' ? Math.min(goal.target, goal.collected + amount) : goal.collected - amount;
+    var label = recordMode === 'deposit' ? 'Saldo setelahnya' : 'Sisa saldo';
+    preview.textContent = label + ': ' + goalMoney(goal, next) + ' (' + percentOf({ target: goal.target, collected: next }) + '%)';
+  }
+
+  all('[data-record-type]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      setRecordMode(button.getAttribute('data-record-type'));
+      renderRecordPreview();
+    });
+  });
+
+  $('record-amount').addEventListener('input', function (event) {
+    var value = digitsOf(event.target.value);
+    event.target.value = value > 0 ? number(value) : '';
+    renderRecordPreview();
+  });
+
+  var recordQuick = $('record-quick');
+  [15000, 30000, 45000, 100000].forEach(function (amount) {
+    var chip = make('button', null, number(amount));
+    chip.type = 'button';
+    chip.addEventListener('click', function () {
+      $('record-amount').value = number(amount);
+      renderRecordPreview();
+    });
+    recordQuick.appendChild(chip);
+  });
+
+  $('record-cancel').addEventListener('click', function () { closeOverlay('overlay-record'); });
+  $('record-save').addEventListener('click', function () {
+    var amount = digitsOf($('record-amount').value);
+    if (amount <= 0) { openSnack('Isi nominal dulu ya.'); return; }
+    var goal = getGoal(currentGoalId);
+    if (!goal) return;
+    if (recordMode === 'withdraw' && amount > goal.collected) { openSnack('Nominal melebihi saldo tersedia.'); return; }
+    var note = $('record-note').value.trim() || (recordMode === 'deposit' ? 'Setoran' : 'Penarikan');
+    closeOverlay('overlay-record');
+    addTransaction(recordMode, amount, note);
+  });
+
+  /* ---------- Form tambah/edit tabungan ---------- */
+
+  function renderForm() {
+    var goal = formMode === 'edit' ? getGoal(formEditingId) : null;
+    $('form-name').value = goal ? goal.title : '';
+    $('form-target').value = goal ? number(goal.target) : '';
+    $('form-plan').value = goal && goal.plan > 0 ? number(goal.plan) : '';
+    formCurrency = goal ? goal.currency : 'IDR';
+    formFreq = goal ? goal.freq : 0;
+    $('form-currency').textContent = currencyByCode(formCurrency).label;
+    $('form-reminder').setAttribute('aria-checked', String(goal ? !!goal.reminder : true));
+    $('form-save').textContent = formMode === 'edit' ? 'Simpan' : 'Simpan';
+    renderFormFreq();
+  }
+
+  function currencyByCode(code) {
+    return CURRENCIES.filter(function (item) { return item.code === code; })[0] || CURRENCIES[0];
+  }
+
+  function renderFormFreq() {
+    all('[data-form-freq]').forEach(function (button) {
+      button.setAttribute('aria-pressed', String(parseInt(button.getAttribute('data-form-freq'), 10) === formFreq));
+    });
+    $('form-plan-label').textContent = 'Nominal Pengisian';
+    $('form-period-hint').textContent = 'Disisihkan setiap ' + FREQUENCIES[formFreq].lower;
+  }
+
+  all('[data-form-freq]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      formFreq = parseInt(button.getAttribute('data-form-freq'), 10);
+      renderFormFreq();
+    });
+  });
+
+  function formatRupiahInput(input) {
+    var value = digitsOf(input.value);
+    input.value = value > 0 ? number(value) : '';
+  }
+
+  $('form-target').addEventListener('input', function (event) { formatRupiahInput(event.target); });
+  $('form-plan').addEventListener('input', function (event) { formatRupiahInput(event.target); });
+
+  $('form-currency-open').addEventListener('click', function () { openCurrencySheet(); });
+  $('form-currency-open').addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openCurrencySheet(); }
+  });
+
+  function openCurrencySheet() {
+    var list = $('currency-list');
+    list.textContent = '';
+    CURRENCIES.forEach(function (currency) {
+      var option = make('button', 'currency-option');
+      option.type = 'button';
+      option.setAttribute('aria-pressed', String(currency.code === formCurrency));
+      option.appendChild(make('strong', null, currency.label));
+      option.appendChild(make('span', null, currency.symbol));
+      option.addEventListener('click', function () {
+        formCurrency = currency.code;
+        $('form-currency').textContent = currency.label;
+        closeOverlay('overlay-currency');
+      });
+      list.appendChild(option);
+    });
+    openOverlay('overlay-currency');
+  }
+
+  $('form-reminder').addEventListener('click', function () {
+    this.setAttribute('aria-checked', String(this.getAttribute('aria-checked') !== 'true'));
+  });
+
+  $('form-back').addEventListener('click', function () {
+    if (formMode === 'edit' && formEditingId) showDetail(formEditingId);
+    else showTab(0);
+  });
+
+  $('form-save').addEventListener('click', function () {
+    var name = $('form-name').value.trim();
+    var target = digitsOf($('form-target').value);
+    var plan = digitsOf($('form-plan').value);
+    if (!name) { openSnack('Nama tabungan wajib diisi.'); return; }
+    if (target <= 0) { openSnack('Target tabungan wajib diisi.'); return; }
+    var goal = formMode === 'edit' ? getGoal(formEditingId) : null;
+    if (goal) {
+      goal.title = name;
+      goal.target = target;
+      goal.plan = plan;
+      goal.freq = formFreq;
+      goal.currency = formCurrency;
+      goal.reminder = $('form-reminder').getAttribute('aria-checked') === 'true';
+      if (goal.collected >= goal.target && !goal.achieved) goal.achieved = true;
+      renderDetail();
+      renderHome();
+      openSnack('Tabungan diperbarui.');
+    } else {
+      if (goals.length >= MAX_GOALS) {
+        openSnack('Batas simulasi 5 celengan. Unduh aplikasi untuk celengan tak terbatas!');
+        return;
+      }
+      var created = {
+        id: 'goal-' + Date.now(), title: name, target: target, collected: 0,
+        plan: plan, freq: formFreq, currency: formCurrency,
+        created: new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date()),
+        reminder: $('form-reminder').getAttribute('aria-checked') === 'true',
+        achieved: false, history: []
+      };
+      goals.unshift(created);
+      renderHome();
+      showDetail(created.id);
+      openSnack(created.title + ' dibuat. Yuk mulai menabung!');
+    }
+  });
+
+  $('open-form').addEventListener('click', function () {
+    if (goals.length >= MAX_GOALS) {
+      openSnack('Batas simulasi 5 celengan. Unduh aplikasi untuk celengan tak terbatas!');
+      return;
+    }
+    showForm('create', null);
+  });
+
+  /* ---------- Bottom sheet kalkulator target ---------- */
+
+  var calc2 = { mode: 0, freq: 0, input: 20, planAmount: 0 };
 
   function dateText(daysFromNow) {
     var date = new Date();
@@ -182,108 +606,134 @@
     return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(date);
   }
 
-  function digitsOf(text) {
-    return parseInt(String(text).replace(/\D/g, ''), 10) || 0;
-  }
-
-  function renderCalc() {
-    var frequency = FREQUENCIES[calc.frequency];
-    var value = calc.input;
+  function renderCalc2() {
+    var frequency = FREQUENCIES[calc2.freq];
+    var target = digitsOf($('form-target').value);
+    $('calc2-target').textContent = money(target);
     var periods = 0;
-    var estimateDays = 0;
+    var days = 0;
 
-    if (calc.mode === 0) {
-      periods = value;
-      calcPlanAmount = periods > 0 ? Math.ceil(TARGET / periods) : 0;
-      estimateDays = periods * frequency.days;
-      $('calc-amount-label').textContent = 'Jumlah ' + frequency.unit;
-      $('calc-amount-unit').textContent = frequency.unit;
-      $('calc-result-value').textContent = calcPlanAmount > 0
-        ? rupiah(calcPlanAmount) + ' / ' + frequency.lower
-        : 'Isi dulu jumlah ' + frequency.lower;
+    if (calc2.mode === 0) {
+      periods = calc2.input;
+      calc2.planAmount = periods > 0 ? Math.ceil(target / periods) : 0;
+      days = periods * frequency.days;
+      $('calc2-amount-label').textContent = 'Jumlah ' + frequency.unit;
+      $('calc2-unit').textContent = frequency.unit;
+      $('calc2-result').textContent = calc2.planAmount > 0 ? money(calc2.planAmount) + ' / ' + frequency.lower : 'Isi dulu jumlah ' + frequency.lower;
     } else {
-      calcPlanAmount = value;
-      periods = value > 0 ? Math.ceil(TARGET / value) : 0;
-      estimateDays = periods * frequency.days;
-      $('calc-amount-label').textContent = 'Nominal per ' + frequency.unit + ' (Rp)';
-      $('calc-amount-unit').textContent = 'Rp';
-      $('calc-result-value').textContent = periods > 0
-        ? number(periods) + ' ' + frequency.unit
-        : 'Isi dulu nominal per ' + frequency.lower;
+      calc2.planAmount = calc2.input;
+      periods = calc2.planAmount > 0 ? Math.ceil(target / calc2.planAmount) : 0;
+      days = periods * frequency.days;
+      $('calc2-amount-label').textContent = 'Nominal per ' + frequency.unit + ' (Rp)';
+      $('calc2-unit').textContent = 'Rp';
+      $('calc2-result').textContent = periods > 0 ? number(periods) + ' ' + frequency.unit : 'Isi dulu nominal per ' + frequency.lower;
     }
+    $('calc2-date').textContent = periods > 0 ? 'Estimasi tercapai: ' + dateText(days) : 'Estimasi tercapai: —';
 
-    $('calc-result-date').textContent = periods > 0
-      ? 'Estimasi tercapai: ' + dateText(estimateDays)
-      : 'Estimasi tercapai: —';
-
-    all('#calc-mode [data-calc-mode]').forEach(function (button) {
-      var active = parseInt(button.getAttribute('data-calc-mode'), 10) === calc.mode;
-      button.classList.toggle('is-active', active);
-      button.setAttribute('aria-pressed', String(active));
+    all('[data-calc2-mode]').forEach(function (button) {
+      button.setAttribute('aria-pressed', String(parseInt(button.getAttribute('data-calc2-mode'), 10) === calc2.mode));
     });
-    all('#calc-freq [data-calc-freq]').forEach(function (button) {
-      var active = parseInt(button.getAttribute('data-calc-freq'), 10) === calc.frequency;
-      button.classList.toggle('is-active', active);
-      button.setAttribute('aria-pressed', String(active));
+    all('[data-calc2-freq]').forEach(function (button) {
+      button.setAttribute('aria-pressed', String(parseInt(button.getAttribute('data-calc2-freq'), 10) === calc2.freq));
     });
 
-    var quick = calc.mode === 0 ? frequency.quick : QUICK_AMOUNTS;
-    var container = $('calc-quick');
+    var quickValues = calc2.mode === 0 ? frequency.quick : [10000, 20000, 50000, 100000];
+    var container = $('calc2-quick');
     container.textContent = '';
-    quick.forEach(function (amount) {
-      var chip = document.createElement('button');
+    quickValues.forEach(function (value) {
+      var chip = make('button', null, calc2.mode === 0 ? value + ' ' + frequency.unit : number(value));
       chip.type = 'button';
-      chip.textContent = calc.mode === 0 ? amount + ' ' + frequency.unit : number(amount);
-      if (amount === calc.input) chip.classList.add('is-selected');
       chip.addEventListener('click', function () {
-        calc.input = amount;
-        $('calc-amount').value = number(amount);
-        renderCalc();
+        calc2.input = value;
+        $('calc2-amount').value = number(value);
+        renderCalc2();
       });
       container.appendChild(chip);
     });
   }
 
-  all('#calc-mode [data-calc-mode]').forEach(function (button) {
+  all('[data-calc2-mode]').forEach(function (button) {
     button.addEventListener('click', function () {
-      calc.mode = parseInt(button.getAttribute('data-calc-mode'), 10);
-      calc.input = calc.mode === 0 ? 20 : 15000;
-      $('calc-amount').value = number(calc.input);
-      renderCalc();
+      calc2.mode = parseInt(button.getAttribute('data-calc2-mode'), 10);
+      calc2.input = calc2.mode === 0 ? 20 : 15000;
+      $('calc2-amount').value = number(calc2.input);
+      renderCalc2();
     });
   });
 
-  all('#calc-freq [data-calc-freq]').forEach(function (button) {
+  all('[data-calc2-freq]').forEach(function (button) {
     button.addEventListener('click', function () {
-      calc.frequency = parseInt(button.getAttribute('data-calc-freq'), 10);
-      calc.input = FREQUENCIES[calc.frequency].quick[2];
-      $('calc-amount').value = number(calc.input);
-      renderCalc();
+      calc2.freq = parseInt(button.getAttribute('data-calc2-freq'), 10);
+      calc2.input = FREQUENCIES[calc2.freq].quick[2];
+      $('calc2-amount').value = number(calc2.input);
+      renderCalc2();
     });
   });
 
-  $('calc-amount').addEventListener('input', function (event) {
-    calc.input = digitsOf(event.target.value);
-    event.target.value = calc.input > 0 ? number(calc.input) : '';
-    renderCalc();
+  $('calc2-amount').addEventListener('input', function (event) {
+    calc2.input = digitsOf(event.target.value);
+    event.target.value = calc2.input > 0 ? number(calc2.input) : '';
+    renderCalc2();
   });
 
-  $('calc-apply').addEventListener('click', function () {
-    if (calcPlanAmount <= 0) return;
-    var frequency = FREQUENCIES[calc.frequency];
-    sim.plan = Math.max(1, Math.ceil(calcPlanAmount / frequency.days));
-    renderSim();
-    document.querySelector('[data-phone-tab="detail"]').click();
-    showFeedback('Rencana diperbarui jadi ' + rupiah(sim.plan) + ' Perhari.');
+  $('form-calc-open').addEventListener('click', function () {
+    calc2.input = 20;
+    calc2.mode = 0;
+    calc2.freq = formFreq;
+    $('calc2-amount').value = number(calc2.input);
+    renderCalc2();
+    openOverlay('overlay-calc');
   });
 
-  $('calc-amount').value = number(calc.input);
-  renderCalc();
+  $('calc2-apply').addEventListener('click', function () {
+    if (calc2.planAmount <= 0) { openSnack('Isi dulu perhitungannya.'); return; }
+    formFreq = calc2.freq;
+    $('form-plan').value = number(calc2.planAmount);
+    renderFormFreq();
+    closeOverlay('overlay-calc');
+    openSnack('Rencana pengisian diterapkan.');
+  });
+
+  /* ---------- Pengaturan ---------- */
+
+  $('biometric-switch').addEventListener('click', function () {
+    var active = this.getAttribute('aria-checked') !== 'true';
+    this.setAttribute('aria-checked', String(active));
+    $('biometric-caption').textContent = active ? 'Aktif di simulasi' : 'Nonaktif secara default';
+    if (active) openSnack('Simulasi: Kunci biometrik aktif di aplikasi Android');
+  });
+
+  all('[data-demo-snackbar]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      openSnack(button.getAttribute('data-demo-snackbar'));
+    });
+  });
+
+  $('about-row').addEventListener('click', function () { openOverlay('overlay-about'); });
+  $('about-close').addEventListener('click', function () { closeOverlay('overlay-about'); });
+  $('check-update').addEventListener('click', function () {
+    openSnack('Sisihin sudah versi terbaru (' + latestVersion + ')');
+  });
+
+  /* ---------- Reset simulasi ---------- */
+
+  $('reset-sim').addEventListener('click', function () {
+    seedGoals();
+    applyAppTheme('dark');
+    all('.app-overlay').forEach(function (overlay) { overlay.hidden = true; });
+    $('biometric-switch').setAttribute('aria-checked', 'false');
+    $('biometric-caption').textContent = 'Nonaktif secara default';
+    showTab(0);
+    openSnack('Simulasi direset.');
+  });
 
   /* ---------- Rilis terbaru dari GitHub API ---------- */
 
   function setVersion(version) {
+    latestVersion = version;
     all('[data-release-version]').forEach(function (node) { node.textContent = 'v' + version; });
+    $('settings-version').textContent = 'Versi ' + version;
+    $('about-version').textContent = 'Versi terpasang: ' + version;
   }
 
   function renderRelease(data) {
@@ -292,7 +742,7 @@
     document.querySelector('[data-release-title]').textContent = data.title;
     document.querySelector('[data-release-size]').textContent = data.size;
     document.querySelector('[data-release-changelog]').textContent = data.changelog;
-    document.querySelector('#release-note').textContent = data.note;
+    $('release-note').textContent = data.note;
     all('.download-link').forEach(function (link) { link.href = data.url; });
   }
 
@@ -308,18 +758,11 @@
     });
   }
 
-  function isValidRelease(json) {
-    return json && typeof json === 'object' && typeof json.tag_name === 'string' && json.tag_name.trim() !== '';
-  }
-
   function parseRelease(json) {
     var version = json.tag_name.trim().replace(/^[vV]/, '') || FALLBACK_VERSION;
-    var apk = null;
-    if (Array.isArray(json.assets)) {
-      apk = json.assets.find(function (asset) {
-        return asset && typeof asset.name === 'string' && /\.apk$/i.test(asset.name);
-      });
-    }
+    var apk = Array.isArray(json.assets) ? json.assets.filter(function (asset) {
+      return asset && typeof asset.name === 'string' && /\.apk$/i.test(asset.name);
+    })[0] : null;
     var sizeText = 'Ukuran APK —';
     if (apk && typeof apk.size === 'number' && apk.size > 0) {
       sizeText = 'Ukuran APK ' + (apk.size / 1024 / 1024).toFixed(1) + ' MB';
@@ -328,12 +771,9 @@
     if (json.published_at) {
       var parsed = new Date(json.published_at);
       if (!isNaN(parsed.getTime())) {
-        dateText = 'Dirilis ' + new Intl.DateTimeFormat('id-ID', {
-          day: 'numeric', month: 'short', year: 'numeric'
-        }).format(parsed);
+        dateText = 'Dirilis ' + new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(parsed);
       }
     }
-
     return {
       version: version,
       date: dateText,
@@ -349,7 +789,6 @@
     if (!window.fetch) { useFallback(); return; }
     var controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     var timeout = setTimeout(function () { if (controller) controller.abort(); }, 7000);
-
     fetch(RELEASE_API, {
       headers: { 'Accept': 'application/vnd.github+json' },
       signal: controller ? controller.signal : undefined
@@ -360,7 +799,7 @@
       })
       .then(function (json) {
         clearTimeout(timeout);
-        if (!isValidRelease(json)) throw new Error('Format rilis tidak dikenal');
+        if (!json || typeof json.tag_name !== 'string' || !json.tag_name.trim()) throw new Error('Format rilis tidak dikenal');
         renderRelease(parseRelease(json));
       })
       .catch(function () {
@@ -369,5 +808,11 @@
       });
   }
 
+  /* ---------- Init ---------- */
+
+  applyTheme(currentTheme());
+  applyAppTheme('dark');
+  seedGoals();
+  showTab(0);
   loadRelease();
 })();
