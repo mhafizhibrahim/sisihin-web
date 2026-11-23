@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sisihin — Sisihkan sedikit demi sedikit sampai targetnya kebeli</title>
+  <meta name="description" content="Aplikasi Android untuk mencatat celengan dan target tabungan. Gratis, tanpa iklan, dan 100% offline. Semua data tersimpan di HP sendiri.">
+  <meta name="theme-color" content="#000000">
+  <meta property="og:title" content="Sisihin — Celengan sederhana di HP kamu">
+  <meta property="og:description" content="Buka aplikasi, bikin celengan, catat setoran, selesai. Tanpa daftar akun, tanpa iklan.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="./assets/sisihin-icon.png">
+  <link rel="icon" type="image/png" href="./assets/sisihin-icon.png">
+  <script>
+    // Pasang tema sebelum halaman dicat supaya tidak ada kedip terang saat mode Gelap aktif.
+    try {
+      var storedTheme = localStorage.getItem('sisihin-theme');
+      if (storedTheme === 'light' || storedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', storedTheme);
+      }
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <a class="skip-link" href="#utama">Lewati ke konten</a>
+
+  <header class="navbar">
+    <div class="container nav-inner">
+      <a class="brand" href="#utama" aria-label="Sisihin, kembali ke atas">
+        <img src="./assets/sisihin-icon.png" alt="Ikon Sisihin" width="32" height="32" class="brand-logo">
+        <span>Sisihin<span class="brand-dot">.</span></span>
+      </a>
+
+      <nav class="nav-actions" aria-label="Navigasi utama">
+        <div class="theme-switch" role="group" aria-label="Pilih tema">
+          <button type="button" class="theme-option" data-theme-choice="dark" aria-pressed="true">Gelap</button>
+          <button type="button" class="theme-option" data-theme-choice="light" aria-pressed="false">Terang</button>
+        </div>
+        <a class="nav-link" href="https://github.com/mhafizhibrahim/sisihin" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a class="btn btn-primary btn-sm download-link" href="https://github.com/mhafizhibrahim/sisihin/releases/latest" target="_blank" rel="noopener noreferrer">Download APK</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="utama">
+    <section class="hero container" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <span class="badge"><span class="badge-dot"></span> Gratis &bull; Tanpa Iklan &bull; 100% Offline</span>
+        <h1 id="hero-title">Sisihkan sedikit demi sedikit sampai targetnya kebeli.</h1>
+        <p class="hero-sub">Aplikasi Android untuk mencatat celengan dan target tabungan. Buka aplikasi, bikin celengan, catat setoran, selesai &mdash; semua data tersimpan di HP sendiri tanpa daftar akun.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary btn-lg download-link" href="https://github.com/mhafizhibrahim/sisihin/releases/latest" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20h14v-2H5v2zm7-16v10.17l3.59-3.58L17 12l-5 5-5-5 1.41-1.41L11 14.17V4h1z"/></svg>
+            Download APK
+          </a>
+          <a class="btn btn-secondary btn-lg" href="https://github.com/mhafizhibrahim/sisihin" target="_blank" rel="noopener noreferrer">Source Code</a>
+        </div>
+        <p class="hero-meta">Android 8.0+ &bull; Versi <span data-release-version>v1.1.3</span> &bull; Tanpa daftar akun</p>
+      </div>
+
+      <div class="hero-visual">
+        <div class="phone" aria-label="Simulasi interaktif layar Detail Celengan Sisihin">
+          <div class="phone-notch" aria-hidden="true"></div>
+          <div class="phone-screen">
+            <div class="phone-tabs" role="tablist" aria-label="Coba tampilan aplikasi">
+              <button type="button" class="phone-tab is-active" role="tab" aria-selected="true" aria-controls="panel-detail" data-phone-tab="detail">Detail Celengan</button>
+              <button type="button" class="phone-tab" role="tab" aria-selected="false" aria-controls="panel-calc" data-phone-tab="calc">Kalkulator Target</button>
+            </div>
+
+            <div class="phone-panel is-active" id="panel-detail" role="tabpanel">
+              <div class="mini-topbar">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11.67 3.87 9.9 5.64l6.56 6.56H2v2.4h14.46l-6.56 6.56 1.77 1.77 9.41-9.41z"/></svg>
+                <strong>Keyboard</strong>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+              </div>
+
+              <div class="phone-body">
+                <div class="goal-photo">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm-9 3h2v2h-2V8zm0 3h2v2h-2v-2zM7 8h2v2H7V8zm0 3h2v2H7v-2zM5 14h14v4H5v-4zm9-3h2v2h-2v-2zm3 0h2v2h-2v-2zm3 0h2v2h-2v-2zM7 16h2v1H7v-1zm4 0h6v1h-6v-1z"/></svg>
+                  <span>Foto barang incaran</span>
+                </div>
+
+                <div class="mini-block target-block">
+                  <div class="target-row">
+                    <div>
+                      <div class="target-amount">Rp500.000</div>
+                      <div class="target-plan" id="sim-plan">Rp15.000 Perhari</div>
+                    </div>
+                    <div class="ring-wrap">
+                      <svg class="ring" viewBox="0 0 64 64" aria-hidden="true">
+                        <circle class="ring-track" cx="32" cy="32" r="26"></circle>
+                        <circle class="ring-value" id="sim-ring-progress" cx="32" cy="32" r="26" stroke-dasharray="163.36" stroke-dashoffset="96.38"></circle>
+                      </svg>
+                      <span class="ring-label" id="sim-percent">41%</span>
+                    </div>
+                  </div>
+                  <div class="mini-divider"></div>
+                  <div class="mini-row"><span>Tanggal Dibuat</span><span>1 Jan 2026</span></div>
+                  <div class="mini-row"><span>Estimasi</span><strong id="sim-estimate">20 Hari Lagi</strong></div>
+                </div>
+
+                <div class="mini-block balance-block">
+                  <span class="block-label">SALDO</span>
+                  <div class="balance-cells">
+                    <div><span>Terkumpul</span><strong class="text-green" id="sim-collected">Rp205.000</strong></div>
+                    <div class="v-divider" aria-hidden="true"></div>
+                    <div><span>Kekurangan</span><strong class="text-red" id="sim-remaining">Rp295.000</strong></div>
+                  </div>
+                </div>
+
+                <div class="mini-block action-block">
+                  <div class="action-row">
+                    <button type="button" class="sim-action sim-add" id="sim-add">+ Tambah</button>
+                    <button type="button" class="sim-action sim-withdraw" id="sim-withdraw">- Kurangi</button>
+                  </div>
+                  <div class="chip-row" id="sim-chips" aria-label="Nominal setoran cepat">
+                    <button type="button" class="sim-chip is-selected" data-sim-amount="15000" aria-pressed="true">15.000</button>
+                    <button type="button" class="sim-chip" data-sim-amount="30000" aria-pressed="false">30.000</button>
+                    <button type="button" class="sim-chip" data-sim-amount="45000" aria-pressed="false">45.000</button>
+                  </div>
+                  <div class="sim-tools">
+                    <button type="button" class="text-action" id="sim-reset">Reset simulasi</button>
+                    <span class="sim-hint">Ketuk chip untuk setoran cepat</span>
+                  </div>
+                </div>
+
+                <div class="sim-feedback" id="sim-feedback" role="status" aria-live="polite" hidden>
+                  <span id="sim-feedback-text"></span>
+                  <button type="button" id="sim-undo">Urungkan</button>
+                </div>
+                <div class="sim-status" id="sim-status" role="status" hidden>
+                  <strong>100% Tercapai</strong>
+                  <span>Target tercapai. Celengan ini sudah diarsipkan dan tidak dapat diubah.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="phone-panel" id="panel-calc" role="tabpanel" hidden>
+              <div class="calc-head">
+                <strong>Kalkulator Target</strong>
+                <span>Hitung otomatis nominal atau lama menabung</span>
+              </div>
+              <div class="phone-body calc-body">
+                <div class="calc-target-card">
+                  <span>Target Tabungan</span>
+                  <strong>Rp500.000</strong>
+                </div>
+
+                <div class="pill-track" role="group" aria-label="Mode kalkulator" id="calc-mode">
+                  <button type="button" class="pill-option is-active" data-calc-mode="0" aria-pressed="true">Cari Nominal</button>
+                  <button type="button" class="pill-option" data-calc-mode="1" aria-pressed="false">Cari Waktu</button>
+                </div>
+
+                <div class="pill-track" role="group" aria-label="Frekuensi menabung" id="calc-freq">
+                  <button type="button" class="pill-option is-active" data-calc-freq="0" aria-pressed="true">Harian</button>
+                  <button type="button" class="pill-option" data-calc-freq="1" aria-pressed="false">Mingguan</button>
+                  <button type="button" class="pill-option" data-calc-freq="2" aria-pressed="false">Bulanan</button>
+                </div>
+
+                <label class="calc-input-label" for="calc-amount" id="calc-amount-label">Jumlah Hari</label>
+                <div class="calc-input-wrap">
+                  <input type="text" id="calc-amount" inputmode="numeric" autocomplete="off" value="20" aria-describedby="calc-amount-label">
+                  <span id="calc-amount-unit">Hari</span>
+                </div>
+
+                <div class="chip-row calc-quick" id="calc-quick" aria-label="Pilihan cepat"></div>
+
+                <div class="calc-result" id="calc-result">
+                  <strong id="calc-result-value">Rp25.000 / hari</strong>
+                  <span id="calc-result-date">Estimasi tercapai: 20 Jan 2026</span>
+                </div>
+
+                <button type="button" class="calc-apply" id="calc-apply">Terapkan ke Rencana</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="mockup-caption">Ini simulasi. Semua angka di atas bisa kamu ubah langsung tanpa daftar akun.</p>
+      </div>
+    </section>
+
+    <section class="section container" id="fitur" aria-labelledby="fitur-title">
+      <div class="section-head">
+        <span class="eyebrow">FITUR</span>
+        <h2 id="fitur-title">Yang kamu butuhkan, tanpa yang bikin bingung.</h2>
+        <p>Semua fiturnya jalan di HP. Nggak ada server, nggak ada iklan, nggak ada notifikasi jualan.</p>
+      </div>
+
+      <div class="bento">
+        <article class="feature-card feature-wide">
+          <span class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 9l10 6 8-4.8V17h2V9L12 3zM4 14.5V17c0 1.66 3.58 3 8 3s8-1.34 8-3v-2.5L12 17 4 14.5z"/></svg></span>
+          <h3>Target &amp; foto barang</h3>
+          <p>Bikin celengan dengan target nominal, foto barang incaran, dan rencana nabung harian, mingguan, atau bulanan. Estimasi tanggal tercapainya dihitung otomatis.</p>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></span>
+          <h3>Setoran cepat &amp; undo</h3>
+          <p>Nominal yang paling sering kamu pakai muncul sebagai chip. Salah pencet? Tinggal <b>Urungkan</b>. Penarikan juga dicatat biar saldo tetap jujur.</p>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 5h-2V3H7v2H5a2 2 0 0 0-2 2v2a4 4 0 0 0 4 4h.35A6 6 0 0 0 11 15.92V19H7v2h10v-2h-4v-3.08A6 6 0 0 0 16.65 13H17a4 4 0 0 0 4-4V7a2 2 0 0 0-2-2zm0 4a2 2 0 0 1-2 2h-1a5 5 0 0 1-1.9-3.76A2 2 0 0 1 19 9z"/></svg></span>
+          <h3>Tercapai otomatis</h3>
+          <p>Celengan yang sudah 100% pindah sendiri ke tab <b>Tercapai</b>. Arsipnya read-only supaya nggak keubah nggak sengaja.</p>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 14h-4v-2h4v2zm0-4h-4v-2h4v2zm-6 4H8v-2h4v2zm0-4H8v-2h4v2zm0-4H8V7h4v2zm5-2h2v2h-2V7z"/></svg></span>
+          <h3>Kalkulator target</h3>
+          <p><b>Cari Nominal</b> atau <b>Cari Waktu</b>. Hitung otomatis perlu nyisihin berapa per hari supaya target kekejar.</p>
+        </article>
+
+        <article class="feature-card">
+          <span class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6v-5a6 6 0 0 0-5-5.91V4a1 1 0 1 0-2 0v1.09A6 6 0 0 0 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></span>
+          <h3>Pengingat &amp; kunci</h3>
+          <p>Pengingat nabung tetap aktif setelah HP restart. Kunci aplikasi pakai sidik jari/PIN, jedanya bisa diatur: segera, 30 detik, atau 1 menit.</p>
+        </article>
+
+        <article class="feature-card feature-wide">
+          <span class="feature-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9V6zm3 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg></span>
+          <h3>10 mata uang &amp; backup JSON</h3>
+          <p>IDR, USD, JPY, EUR, SGD, MYR, KRW, GBP, AUD, SAR. Tema gelap/terang ala Instagram, plus <b>Cadangkan</b> dan <b>Pulihkan</b> lewat file JSON kalau pindah HP.</p>
+          <div class="currency-list" aria-label="Mata uang yang didukung">
+            <span>IDR</span><span>USD</span><span>JPY</span><span>EUR</span><span>SGD</span><span>MYR</span><span>KRW</span><span>GBP</span><span>AUD</span><span>SAR</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section container" id="rilis" aria-labelledby="rilis-title">
+      <div class="section-head">
+        <span class="eyebrow">DOWNLOAD</span>
+        <h2 id="rilis-title">Versi terbaru, langsung dari GitHub.</h2>
+        <p>Nggak lewat toko aplikasi. APK-nya diambil dari halaman rilis resmi, dan Sisihin bisa ngecek pembaruan sendiri dari situ.</p>
+      </div>
+
+      <div class="release-layout">
+        <article class="release-card" aria-live="polite">
+          <div class="release-top">
+            <span class="release-version" data-release-version>v1.1.3</span>
+            <span class="release-date" data-release-date>Rilis terbaru</span>
+          </div>
+          <h3 data-release-title>Sisihin</h3>
+          <div class="release-meta">
+            <span data-release-size>Ukuran APK &mdash;</span>
+            <span>Minimal Android 8.0</span>
+          </div>
+          <div class="release-changelog" data-release-changelog>Menunggu data rilis terbaru dari GitHub&hellip;</div>
+          <a class="btn btn-primary btn-block download-link" href="https://github.com/mhafizhibrahim/sisihin/releases/latest" target="_blank" rel="noopener noreferrer">Download APK terbaru</a>
+          <p class="release-note" id="release-note">Kalau GitHub sedang nggak bisa diakses, tombol tetap menuju halaman Releases.</p>
+        </article>
+
+        <div class="install-card">
+          <h3>Cara pasang APK</h3>
+          <ol class="install-steps">
+            <li><span>1</span><div><strong>Unduh APK</strong><p>Tekan tombol Download APK. File diambil dari rilis terbaru di GitHub.</p></div></li>
+            <li><span>2</span><div><strong>Buka file di HP</strong><p>Kalau diminta, izinkan <em>Install dari sumber tidak dikenal</em> untuk file ini.</p></div></li>
+            <li><span>3</span><div><strong>Buka Sisihin</strong><p>Bikin celengan pertama, lalu mulai catat setoran. Selesai.</p></div></li>
+          </ol>
+          <div class="update-note">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A8 8 0 1 0 19.73 14h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+            <p><strong>Cek Pembaruan</strong> ada di Pengaturan. Waktu aplikasi dibuka, Sisihin ngecek rilis baru di background. Kalau lagi offline, ya diam aja &mdash; nggak ada error yang muncul.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <img src="./assets/sisihin-icon.png" alt="" width="28" height="28">
+        <div>
+          <strong>Sisihin<span class="brand-dot">.</span></strong>
+          <span>Celengan sederhana di HP kamu.</span>
+        </div>
+      </div>
+      <nav class="footer-links" aria-label="Tautan kaki halaman">
+        <a href="https://github.com/mhafizhibrahim/sisihin/releases" target="_blank" rel="noopener noreferrer">GitHub Releases</a>
+        <a href="https://github.com/mhafizhibrahim/sisihin/issues" target="_blank" rel="noopener noreferrer">GitHub Issues</a>
+        <a href="https://github.com/mhafizhibrahim/sisihin" target="_blank" rel="noopener noreferrer">Source Code</a>
+      </nav>
+      <p class="footer-credit">Dibuat oleh <strong>Muhammad Hafizh Ibrahim</strong> &bull; Versi <span data-release-version>v1.1.3</span></p>
+    </div>
+  </footer>
+
+  <noscript>
+    <p class="noscript-note">Simulasi celengan dan data rilis terbaru butuh JavaScript. Tombol Download tetap menuju halaman rilis GitHub.</p>
+  </noscript>
+  <script src="./app.js"></script>
+</body>
+</html>
