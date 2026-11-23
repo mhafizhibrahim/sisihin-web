@@ -66,6 +66,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Aturan global paling kuat: atribut hidden menang atas display flex/grid mana pun. */
 [hidden] { display: none !important; }
 
 a { color: inherit; text-decoration: none; }
@@ -210,17 +211,25 @@ svg { display: block; width: 1em; height: 1em; fill: currentColor; }
 
 /* ---------- Phone mockup: replika aplikasi, ukuran mutlak ---------- */
 
+/* Casing fisik HP: token hardware, TIDAK mengikuti tema website. */
 .phone {
   position: relative;
   width: 340px;
   height: 700px;
   flex-shrink: 0;
   padding: 9px;
-  border: 0.8px solid var(--hairline-border);
+  border: 1.5px solid #2c2c34;
   border-radius: 38px;
-  background: var(--elevated-surface);
-  box-shadow: var(--shadow-card);
+  background: #16161a;
+  box-shadow: inset 0 0 0 2px #0a0a0c, 0 24px 60px rgba(0, 0, 0, 0.32), 0 4px 16px rgba(0, 0, 0, 0.24);
   box-sizing: border-box;
+}
+
+/* Di atas latar putih, bezel graphite tetap tegas & elegan. */
+html[data-theme="light"] .phone {
+  border-color: #2c2c34;
+  background: #16161a;
+  box-shadow: inset 0 0 0 2px #0a0a0c, 0 24px 60px rgba(0, 0, 0, 0.18), 0 4px 16px rgba(0, 0, 0, 0.10);
 }
 
 .phone-screen {
@@ -258,6 +267,10 @@ svg { display: block; width: 1em; height: 1em; fill: currentColor; }
   --app-track: #262626;
   --app-inactive: #262626;
   --app-on-accent: #ffffff;
+  --toast-bg: #1e1e1e;
+  --toast-border: #2e2e2e;
+  --toast-text: #f5f5f5;
+  --toast-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
 }
 
 .phone-screen[data-phone-theme="light"] {
@@ -280,6 +293,10 @@ svg { display: block; width: 1em; height: 1em; fill: currentColor; }
   --app-track: #efefef;
   --app-inactive: #efefef;
   --app-on-accent: #ffffff;
+  --toast-bg: #1c1c1e;
+  --toast-border: #1c1c1e;
+  --toast-text: #ffffff;
+  --toast-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
 }
 
 .phone-screen svg { display: block; width: 18px; height: 18px; fill: currentColor; }
@@ -324,9 +341,11 @@ svg { display: block; width: 1em; height: 1em; fill: currentColor; }
 .icon-btn svg { width: 20px; height: 20px; }
 .save-btn { border: 0; border-radius: 999px; padding: 7px 13px; background: var(--app-blue); color: var(--app-on-accent); font-size: 12px; font-weight: 700; }
 
-.app-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--app-border) transparent; }
-.app-scroll::-webkit-scrollbar { width: 3px; }
-.app-scroll::-webkit-scrollbar-thumb { background: var(--app-border); border-radius: 999px; }
+.app-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+
+/* Scrollbar desktop disembunyikan di dalam layar HP ( Android tidak punya scrollbar permanen ). */
+.app-scroll, .sheet-body, .app-dialog { scrollbar-width: none; -ms-overflow-style: none; }
+.app-scroll::-webkit-scrollbar, .sheet-body::-webkit-scrollbar, .app-dialog::-webkit-scrollbar { display: none; }
 .app-pad { padding: 12px 12px 20px; }
 
 .summary-card { display: flex; align-items: center; gap: 10px; padding: 12px; border: 0.8px solid var(--app-border); border-radius: 5px; background: var(--app-card); }
@@ -352,9 +371,9 @@ svg { display: block; width: 1em; height: 1em; fill: currentColor; }
 
 .app-bottomnav { flex-shrink: 0; display: flex; align-items: center; justify-content: space-around; min-height: 60px; padding: 5px 8px 6px; border-top: 0.8px solid var(--app-divider); background: var(--app-topbar); }
 .app-bottomnav[hidden] { display: none !important; }
-.app-bottomnav button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0; border: 0; background: transparent; color: var(--app-muted); font-size: 9px; font-weight: 600; }
-.nav-pill { display: grid; place-items: center; width: 100%; height: 30px; border-radius: 999px; color: var(--app-muted); background: transparent; }
-.nav-pill svg { width: 19px; height: 19px; }
+.app-bottomnav button { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0; border: 0; background: transparent; color: var(--app-muted); font-size: 11px; line-height: 14px; font-weight: 600; }
+.nav-pill { display: grid; place-items: center; flex: 0 0 52px; width: 52px; height: 28px; border-radius: 999px; color: var(--app-muted); background: transparent; }
+.nav-pill svg { width: 22px; height: 22px; }
 .app-bottomnav button[aria-pressed="true"] { color: var(--app-blue); font-weight: 700; }
 .app-bottomnav button[aria-pressed="true"] .nav-pill { background: var(--app-soft); color: var(--app-blue); }
 
@@ -395,8 +414,8 @@ svg { display: block; width: 1em; height: 1em; fill: currentColor; }
 .target-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .target-amount { font-size: 22px; font-weight: 400; letter-spacing: -0.4px; font-variant-numeric: tabular-nums; }
 .target-plan { color: var(--app-secondary); font-size: 11px; font-weight: 500; margin-top: 2px; }
-.ring-wrap { position: relative; width: 58px; height: 58px; flex: 0 0 58px; display: grid; place-items: center; }
-.ring { width: 58px; height: 58px; transform: rotate(-90deg); }
+.ring-wrap { position: relative; width: 56px; height: 56px; flex: 0 0 56px; display: grid; place-items: center; }
+.ring { width: 56px; height: 56px; transform: rotate(-90deg); }
 .ring circle { fill: none; stroke-width: 5; }
 .ring-track { stroke: var(--app-track); }
 .ring-value { stroke: var(--app-blue); stroke-linecap: round; }
@@ -504,9 +523,33 @@ svg { display: block; width: 1em; height: 1em; fill: currentColor; }
 .currency-option span { color: var(--app-secondary); font-size: 10px; }
 .currency-option[aria-pressed="true"] { border-color: var(--app-blue); background: var(--app-soft); color: var(--app-soft-text); }
 
-.snack-overlay { align-items: flex-end; padding: 0 12px 12px; pointer-events: none; }
-.app-snackbar { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-radius: 5px; background: var(--app-elevated); border: 0.8px solid var(--app-border); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24); color: var(--app-text); font-size: 10px; }
-.app-snackbar button { flex-shrink: 0; padding: 0; border: 0; background: transparent; color: var(--app-blue); font-size: 10px; font-weight: 700; }
+/* Notifikasi: pil melayang minimalis, tidak menutupi navbar / konten di bawahnya. */
+.snack-overlay { align-items: flex-end; justify-content: center; padding: 0 14px 76px; pointer-events: none; }
+/* Saat bottom navbar disembunyikan (Detail / Form), turun ke bawah layar. */
+#app-bottomnav[hidden] ~ .app-overlays .snack-overlay { padding-bottom: 18px; }
+.app-snackbar {
+  width: fit-content;
+  max-width: calc(100% - 28px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border: 1px solid var(--toast-border);
+  border-radius: 999px;
+  background: var(--toast-bg);
+  box-shadow: var(--toast-shadow);
+  color: var(--toast-text);
+  font-size: 12px;
+  line-height: 1.25;
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+.snack-overlay.is-visible .app-snackbar { opacity: 1; transform: translateY(0); }
+.app-snackbar span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-snackbar button { flex-shrink: 0; padding: 0; border: 0; background: transparent; color: #0095f6; font-size: 12px; font-weight: 600; }
 
 /* ---------- Section & bento ---------- */
 /* ---------- Section & bento ---------- */
@@ -624,4 +667,5 @@ svg { display: block; width: 1em; height: 1em; fill: currentColor; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  .app-snackbar { transition: none; }
 }

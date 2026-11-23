@@ -7,7 +7,7 @@
 
   var RELEASE_API = 'https://api.github.com/repos/mhafizhibrahim/sisihin/releases/latest';
   var RELEASE_PAGE = 'https://github.com/mhafizhibrahim/sisihin/releases/latest';
-  var FALLBACK_VERSION = '1.1.3'; // app/build.gradle.kts -> versionName
+  var FALLBACK_VERSION = '1.1.3'; // fallback = tag rilis GitHub terbaru saat ini (app/build.gradle.kts -> versionName)
   var FALLBACK_CHANGELOG = 'Perbaikan bug dan peningkatan performa.'; // UpdateChecker.kt
 
   var $ = function (id) { return document.getElementById(id); };
@@ -79,8 +79,9 @@
   var recordMode = 'deposit';
   var snackUndo = null;
   var snackTimer = null;
-  var latestVersion = FALLBACK_VERSION;
-  var RING_CIRCUMFERENCE = 2 * Math.PI * 26;
+  var snackHideTimer = null;
+  var latestVersion = FALLBACK_VERSION; // satu state global versi, dipakai semua tampilan di simulasi
+  var RING_CIRCUMFERENCE = 2 * Math.PI * 25; // detail ring: r=25 di viewBox 56
 
   function money(value, symbol) {
     return (symbol || 'Rp') + number(value);
@@ -156,6 +157,17 @@
 
   var SCREENS = ['screen-tabungan', 'screen-tercapai', 'screen-pengaturan'];
 
+  /* Tutup semua overlay (termasuk snackbar) supaya tidak pernah bertumpuk saat pindah layar. */
+  function closeAllOverlays() {
+    all('.app-overlay').forEach(function (overlay) {
+      overlay.hidden = true;
+      overlay.classList.remove('is-visible');
+    });
+    if (snackTimer) { clearTimeout(snackTimer); snackTimer = null; }
+    if (snackHideTimer) { clearTimeout(snackHideTimer); snackHideTimer = null; }
+    snackUndo = null;
+  }
+
   function showOnly(screenId) {
     all('.app-screen').forEach(function (screen) {
       screen.hidden = screen.id !== screenId;
@@ -165,6 +177,7 @@
   function showTab(index) {
     currentTab = index;
     currentGoalId = null;
+    closeAllOverlays();
     showOnly(SCREENS[index]);
     $('app-bottomnav').hidden = false;
     all('[data-nav-tab]').forEach(function (button) {
@@ -175,6 +188,7 @@
 
   function showDetail(id) {
     currentGoalId = id;
+    closeAllOverlays();
     showOnly('screen-detail');
     $('app-bottomnav').hidden = true;
     renderDetail();
@@ -183,6 +197,7 @@
   function showForm(mode, id) {
     formMode = mode;
     formEditingId = id || null;
+    closeAllOverlays();
     showOnly('screen-form');
     $('app-bottomnav').hidden = true;
     renderForm();
@@ -223,13 +238,30 @@
     if (overlay) overlay.hidden = true;
   }
 
+  function hideSnack() {
+    var overlay = $('overlay-snack');
+    overlay.classList.remove('is-visible');
+    if (snackHideTimer) clearTimeout(snackHideTimer);
+    snackHideTimer = setTimeout(function () {
+      overlay.hidden = true;
+      snackUndo = null;
+    }, 160);
+  }
+
   function openSnack(text, undo) {
+    var overlay = $('overlay-snack');
     if (snackTimer) clearTimeout(snackTimer);
+    if (snackHideTimer) clearTimeout(snackHideTimer);
     $('snack-text').textContent = text;
     snackUndo = typeof undo === 'function' ? undo : null;
     $('snack-action').hidden = !snackUndo;
-    $('overlay-snack').hidden = false;
-    snackTimer = setTimeout(function () { $('overlay-snack').hidden = true; }, 6000);
+    if (overlay.hidden) {
+      overlay.hidden = false;
+      void overlay.offsetWidth; // paksa reflow agar transisi masuk tetap jalan
+    }
+    overlay.classList.add('is-visible');
+    // Notifikasi lama langsung ditimpa; tidak pernah menumpuk.
+    snackTimer = setTimeout(hideSnack, snackUndo ? 3500 : 2500);
   }
 
   all('[data-close-overlay]').forEach(function (backdrop) {
@@ -349,7 +381,7 @@
     var goal = getGoal(currentGoalId);
     if (!goal || goal.achieved || amount <= 0) return;
     if (type === 'withdraw' && amount > goal.collected) {
-      openSnack('Nominal melebihi saldo tersedia.');
+      openSnack('Saldo tidak cukup.');
       return;
     }
     var snapshot = {
@@ -362,7 +394,7 @@
     renderDetail();
     renderHome();
     if (reached) {
-      openSnack('Selamat! ' + goal.title + ' tercapai dan dipindah ke Tercapai.', function () {
+      openSnack('Target tercapai! Pindah ke Tercapai', function () {
         goal.collected = snapshot.collected;
         goal.achieved = snapshot.achieved;
         goal.history = snapshot.history;
@@ -395,15 +427,15 @@
     if (!goal) return;
     goals = goals.filter(function (item) { return item.id !== goal.id; });
     closeOverlay('overlay-confirm');
-    openSnack(goal.title + ' dihapus.');
     showTab(goal.achieved ? 1 : 0);
+    openSnack('Celengan dihapus.');
   });
   $('detail-reminder').addEventListener('click', function () {
     var goal = getGoal(currentGoalId);
     if (!goal || goal.achieved) return;
     goal.reminder = !goal.reminder;
     this.setAttribute('aria-checked', String(goal.reminder));
-    openSnack(goal.reminder ? 'Pengingat 12:00 setiap hari aktif.' : 'Pengingat dimatikan.');
+    openSnack(goal.reminder ? 'Pengingat 12:00 aktif.' : 'Pengingat dimatikan.');
   });
 
   /* ---------- Modal Catat Tabungan ---------- */
@@ -467,10 +499,10 @@
   $('record-cancel').addEventListener('click', function () { closeOverlay('overlay-record'); });
   $('record-save').addEventListener('click', function () {
     var amount = digitsOf($('record-amount').value);
-    if (amount <= 0) { openSnack('Isi nominal dulu ya.'); return; }
+    if (amount <= 0) { openSnack('Isi nominal dulu.'); return; }
     var goal = getGoal(currentGoalId);
     if (!goal) return;
-    if (recordMode === 'withdraw' && amount > goal.collected) { openSnack('Nominal melebihi saldo tersedia.'); return; }
+    if (recordMode === 'withdraw' && amount > goal.collected) { openSnack('Saldo tidak cukup.'); return; }
     var note = $('record-note').value.trim() || (recordMode === 'deposit' ? 'Setoran' : 'Penarikan');
     closeOverlay('overlay-record');
     addTransaction(recordMode, amount, note);
@@ -555,8 +587,8 @@
     var name = $('form-name').value.trim();
     var target = digitsOf($('form-target').value);
     var plan = digitsOf($('form-plan').value);
-    if (!name) { openSnack('Nama tabungan wajib diisi.'); return; }
-    if (target <= 0) { openSnack('Target tabungan wajib diisi.'); return; }
+    if (!name) { openSnack('Nama wajib diisi.'); return; }
+    if (target <= 0) { openSnack('Target wajib diisi.'); return; }
     var goal = formMode === 'edit' ? getGoal(formEditingId) : null;
     if (goal) {
       goal.title = name;
@@ -571,7 +603,7 @@
       openSnack('Tabungan diperbarui.');
     } else {
       if (goals.length >= MAX_GOALS) {
-        openSnack('Batas simulasi 5 celengan. Unduh aplikasi untuk celengan tak terbatas!');
+        openSnack('Batas simulasi 5 celengan');
         return;
       }
       var created = {
@@ -584,13 +616,13 @@
       goals.unshift(created);
       renderHome();
       showDetail(created.id);
-      openSnack(created.title + ' dibuat. Yuk mulai menabung!');
+      openSnack('Celengan dibuat.');
     }
   });
 
   $('open-form').addEventListener('click', function () {
     if (goals.length >= MAX_GOALS) {
-      openSnack('Batas simulasi 5 celengan. Unduh aplikasi untuk celengan tak terbatas!');
+      openSnack('Batas simulasi 5 celengan');
       return;
     }
     showForm('create', null);
@@ -686,12 +718,12 @@
   });
 
   $('calc2-apply').addEventListener('click', function () {
-    if (calc2.planAmount <= 0) { openSnack('Isi dulu perhitungannya.'); return; }
+    if (calc2.planAmount <= 0) { openSnack('Isi perhitungannya dulu.'); return; }
     formFreq = calc2.freq;
     $('form-plan').value = number(calc2.planAmount);
     renderFormFreq();
     closeOverlay('overlay-calc');
-    openSnack('Rencana pengisian diterapkan.');
+    openSnack('Rencana diterapkan.');
   });
 
   /* ---------- Pengaturan ---------- */
@@ -700,7 +732,7 @@
     var active = this.getAttribute('aria-checked') !== 'true';
     this.setAttribute('aria-checked', String(active));
     $('biometric-caption').textContent = active ? 'Aktif di simulasi' : 'Nonaktif secara default';
-    if (active) openSnack('Simulasi: Kunci biometrik aktif di aplikasi Android');
+    if (active) openSnack('Tersedia di aplikasi Android');
   });
 
   all('[data-demo-snackbar]').forEach(function (button) {
@@ -712,7 +744,7 @@
   $('about-row').addEventListener('click', function () { openOverlay('overlay-about'); });
   $('about-close').addEventListener('click', function () { closeOverlay('overlay-about'); });
   $('check-update').addEventListener('click', function () {
-    openSnack('Sisihin sudah versi terbaru (' + latestVersion + ')');
+    openSnack('Sudah versi terbaru (v' + latestVersion + ')');
   });
 
   /* ---------- Reset simulasi ---------- */
@@ -720,7 +752,7 @@
   $('reset-sim').addEventListener('click', function () {
     seedGoals();
     applyAppTheme('dark');
-    all('.app-overlay').forEach(function (overlay) { overlay.hidden = true; });
+    closeAllOverlays();
     $('biometric-switch').setAttribute('aria-checked', 'false');
     $('biometric-caption').textContent = 'Nonaktif secara default';
     showTab(0);
@@ -729,11 +761,12 @@
 
   /* ---------- Rilis terbaru dari GitHub API ---------- */
 
+  /* Satu-satunya sumber versi di simulasi: semua tampilan ikut state global ini. */
   function setVersion(version) {
-    latestVersion = version;
-    all('[data-release-version]').forEach(function (node) { node.textContent = 'v' + version; });
-    $('settings-version').textContent = 'Versi ' + version;
-    $('about-version').textContent = 'Versi terpasang: ' + version;
+    latestVersion = String(version).trim().replace(/^[vV]/, '') || FALLBACK_VERSION;
+    all('[data-release-version]').forEach(function (node) { node.textContent = 'v' + latestVersion; });
+    $('settings-version').textContent = 'Sisihin v' + latestVersion;
+    $('about-version').textContent = 'Versi terpasang: v' + latestVersion;
   }
 
   function renderRelease(data) {
@@ -813,6 +846,8 @@
   applyTheme(currentTheme());
   applyAppTheme('dark');
   seedGoals();
-  showTab(0);
+  closeAllOverlays();
+  setVersion(FALLBACK_VERSION);
+  showTab(0); // layar awal murni tab Tabungan, tanpa modal/snackbar terbuka
   loadRelease();
 })();

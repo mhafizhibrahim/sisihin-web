@@ -74,7 +74,7 @@
             <div class="app-content" id="app-content">
               <!-- Tabungan -->
               <section class="app-screen is-active" id="screen-tabungan" aria-label="Tabungan">
-                <div class="app-topbar"><h2>Tabungan<span class="brand-dot">.</span></h2></div>
+                <div class="app-topbar"><h2>Sisihin<span class="brand-dot">.</span></h2></div>
                 <div class="app-scroll">
                   <div class="app-pad">
                     <div class="summary-card">
@@ -123,9 +123,9 @@
 
                     <div class="settings-heading">Data</div>
                     <div class="settings-card">
-                      <button type="button" class="settings-action" data-demo-snackbar="Fitur backup &amp; restore JSON tersedia di aplikasi Android"><strong>Cadangkan Data</strong><span>Simpan celengan dan riwayat ke file JSON</span></button>
+                      <button type="button" class="settings-action" data-demo-snackbar="Tersedia di aplikasi Android"><strong>Cadangkan Data</strong><span>Simpan celengan dan riwayat ke file JSON</span></button>
                       <div class="app-divider"></div>
-                      <button type="button" class="settings-action" data-demo-snackbar="Fitur backup &amp; restore JSON tersedia di aplikasi Android"><strong>Pulihkan Data</strong><span>Pulihkan dari file cadangan JSON</span></button>
+                      <button type="button" class="settings-action" data-demo-snackbar="Tersedia di aplikasi Android"><strong>Pulihkan Data</strong><span>Pulihkan dari file cadangan JSON</span></button>
                     </div>
 
                     <div class="settings-heading">Tentang</div>
@@ -135,7 +135,7 @@
                       <button type="button" class="settings-action" id="check-update"><strong>Cek Pembaruan</strong><span>Periksa versi terbaru Sisihin</span></button>
                     </div>
 
-                    <div class="settings-foot"><strong>Sisihin</strong><span id="settings-version">Versi 1.1.3</span></div>
+                    <div class="settings-foot"><strong>Sisihin</strong><span id="settings-version">Sisihin v1.1.3</span></div>
                   </div>
                 </div>
               </section>
@@ -144,7 +144,7 @@
               <section class="app-screen" id="screen-detail" aria-label="Detail Celengan" hidden>
                 <div class="app-topbar detail-topbar">
                   <button type="button" class="icon-btn" id="detail-back" aria-label="Kembali">
-                    <svg viewBox="0 0 24 24"><path d="M11.67 3.87 9.9 5.64l6.56 6.56H2v2.4h14.46l-6.56 6.56 1.77 1.77 9.41-9.41z"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
                   </button>
                   <div class="detail-top-actions">
                     <button type="button" class="icon-btn" id="detail-edit" aria-label="Edit celengan">
@@ -164,9 +164,9 @@
                       <div class="target-row">
                         <div><div class="target-amount" id="detail-target">Rp500.000</div><div class="target-plan" id="detail-plan">Rp15.000 Perhari</div></div>
                         <div class="ring-wrap">
-                          <svg class="ring" viewBox="0 0 64 64" aria-hidden="true">
-                            <circle class="ring-track" cx="32" cy="32" r="26"></circle>
-                            <circle class="ring-value" id="detail-ring" cx="32" cy="32" r="26" stroke-dasharray="163.36" stroke-dashoffset="96.38"></circle>
+                          <svg class="ring" viewBox="0 0 56 56" aria-hidden="true">
+                            <circle class="ring-track" cx="28" cy="28" r="25"></circle>
+                            <circle class="ring-value" id="detail-ring" cx="28" cy="28" r="25" stroke-dasharray="157.08" stroke-dashoffset="92.62"></circle>
                           </svg>
                           <span class="ring-label" id="detail-percent">41%</span>
                         </div>
@@ -220,7 +220,7 @@
               <section class="app-screen" id="screen-form" aria-label="Tambah Tabungan" hidden>
                 <div class="app-topbar form-topbar">
                   <button type="button" class="icon-btn" id="form-back" aria-label="Kembali">
-                    <svg viewBox="0 0 24 24"><path d="M11.67 3.87 9.9 5.64l6.56 6.56H2v2.4h14.46l-6.56 6.56 1.77 1.77 9.41-9.41z"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
                   </button>
                   <button type="button" class="save-btn" id="form-save">Simpan</button>
                 </div>
@@ -270,7 +270,7 @@
             </nav>
 
             <div class="app-overlays" id="app-overlays">
-              <div class="app-overlay" id="overlay-record" role="dialog" aria-modal="true" aria-label="Catat Tabungan">
+              <div class="app-overlay" id="overlay-record" role="dialog" aria-modal="true" aria-label="Catat Tabungan" hidden>
                 <div class="app-backdrop" data-close-overlay></div>
                 <div class="app-dialog">
                   <strong class="dialog-title">Catat Tabungan</strong>
@@ -286,7 +286,7 @@
                 </div>
               </div>
 
-              <div class="app-overlay sheet-overlay" id="overlay-calc" role="dialog" aria-modal="true" aria-label="Kalkulator Target">
+              <div class="app-overlay sheet-overlay" id="overlay-calc" role="dialog" aria-modal="true" aria-label="Kalkulator Target" hidden>
                 <div class="app-backdrop" data-close-overlay></div>
                 <div class="app-sheet">
                   <div class="sheet-head"><strong>Kalkulator Target</strong><span>Hitung otomatis nominal atau lama menabung</span></div>
@@ -309,12 +309,12 @@
                 </div>
               </div>
 
-              <div class="app-overlay sheet-overlay" id="overlay-currency" role="dialog" aria-modal="true" aria-label="Pilih Mata Uang">
+              <div class="app-overlay sheet-overlay" id="overlay-currency" role="dialog" aria-modal="true" aria-label="Pilih Mata Uang" hidden>
                 <div class="app-backdrop" data-close-overlay></div>
                 <div class="app-sheet"><div class="sheet-head"><strong>Pilih Mata Uang</strong></div><div class="sheet-body currency-sheet" id="currency-list"></div></div>
               </div>
 
-              <div class="app-overlay" id="overlay-confirm" role="dialog" aria-modal="true" aria-label="Hapus celengan">
+              <div class="app-overlay" id="overlay-confirm" role="dialog" aria-modal="true" aria-label="Hapus celengan" hidden>
                 <div class="app-backdrop" data-close-overlay></div>
                 <div class="app-dialog confirm-dialog">
                   <strong class="dialog-title">Hapus celengan ini?</strong>
@@ -323,18 +323,18 @@
                 </div>
               </div>
 
-              <div class="app-overlay" id="overlay-about" role="dialog" aria-modal="true" aria-label="Tentang Sisihin">
+              <div class="app-overlay" id="overlay-about" role="dialog" aria-modal="true" aria-label="Tentang Sisihin" hidden>
                 <div class="app-backdrop" data-close-overlay></div>
                 <div class="app-dialog">
                   <strong class="dialog-title">Tentang Sisihin</strong>
                   <p>Aplikasi Android untuk mencatat celengan dan target tabungan dengan cara sederhana. Semua data disimpan di perangkat dan bisa dibackup/restore ke file JSON.</p>
                   <p>Sumber &amp; rilis: github.com/mhafizhibrahim/sisihin</p>
-                  <p class="about-version" id="about-version">Versi terpasang: 1.1.3</p>
+                  <p class="about-version" id="about-version">Versi terpasang: v1.1.3</p>
                   <div class="dialog-actions"><button type="button" class="text-btn" id="about-close">Tutup</button></div>
                 </div>
               </div>
 
-              <div class="app-overlay snack-overlay" id="overlay-snack" role="status" aria-live="polite">
+              <div class="app-overlay snack-overlay" id="overlay-snack" role="status" aria-live="polite" hidden>
                 <div class="app-snackbar"><span id="snack-text"></span><button type="button" id="snack-action" hidden>Urungkan</button></div>
               </div>
             </div>
